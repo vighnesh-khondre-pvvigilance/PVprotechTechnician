@@ -1,3 +1,23 @@
+// src/types/visit.ts
+
+export type VisitStatus = "Pending" | "In Progress" | "Completed";
+
+export interface Visit {
+  id: string;
+  plantId: string;
+  taskId: string;
+
+  siteName: string;
+  clientName: string;
+  location: string;
+
+  assignedDate: string;
+  technicianName: string;
+
+  priority: "Low" | "Medium" | "High";
+  status: VisitStatus;
+}
+
 export interface VisitWorkflowState {
   plantId: string;
   taskId: string;
@@ -39,3 +59,45 @@ export interface VisitWorkflowState {
     after: string[];
   };
 }
+
+export const defaultWorkflowState: VisitWorkflowState = {
+  plantId: "",
+  taskId: "",
+
+  approvalConfirmed: false,
+
+  safety: {
+    verified: false,
+    image: null,
+  },
+
+  visitForm: {
+    visitDate: "",
+    inverterStatus: "",
+    inverterRemarks: "",
+
+    importReading: "",
+    exportReading: "",
+    netReading: "",
+    generationReading: "",
+
+    extraRemarks: "",
+    technicianId: "",
+  },
+
+  uploads: {
+    clientSignature: null,
+    extraPhoto: null,
+    inverterPhoto: null,
+    importPhoto: null,
+    exportPhoto: null,
+    netPhoto: null,
+    generationPhoto: null,
+  },
+
+  cleaning: {
+    done: false,
+    before: [],
+    after: [],
+  },
+};

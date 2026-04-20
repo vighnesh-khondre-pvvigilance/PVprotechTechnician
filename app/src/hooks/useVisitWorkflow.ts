@@ -1,85 +1,96 @@
-import { useState } from "react";
-import { VisitWorkflowState } from "../types/visit";
+// src/hooks/useVisitWorkflow.ts
 
-export function useVisitWorkflow(taskId: string, plantId: string) {
-  const [step, setStep] = useState(1);
+import { useState } from "react";
+import {
+  VisitWorkflowState,
+  defaultWorkflowState,
+} from "../types/visit";
+
+export function useVisitWorkflow(
+  taskId: string,
+  plantId: string
+) {
+  const [step, setStep] = useState<number>(1);
 
   const [form, setForm] = useState<VisitWorkflowState>({
+    ...defaultWorkflowState,
     taskId,
     plantId,
-
-    approvalConfirmed: false,
-
-    safety: {
-      verified: false,
-      image: null,
-    },
-
-    visitForm: {
-      visitDate: "",
-      inverterStatus: "",
-      inverterRemarks: "",
-      importReading: "",
-      exportReading: "",
-      netReading: "",
-      generationReading: "",
-      extraRemarks: "",
-      technicianId: "",
-    },
-
-    uploads: {
-      clientSignature: null,
-      extraPhoto: null,
-      inverterPhoto: null,
-      importPhoto: null,
-      exportPhoto: null,
-      netPhoto: null,
-      generationPhoto: null,
-    },
-
-    cleaning: {
-      done: false,
-      before: [],
-      after: [],
-    },
   });
 
-  // ✅ SAFE nested update helper
-  const updateForm = (patch: Partial<VisitWorkflowState>) => {
+  /**
+   * ✅ Safe nested update
+   * Example:
+   * updateForm({
+   *   safety: { verified: true }
+   * })
+   */
+  const updateForm = (
+    patch: Partial<VisitWorkflowState>
+  ) => {
     setForm((prev) => deepMerge(prev, patch));
+  };
+
+  const nextStep = () => {
+    setStep((prev) => prev + 1);
+  };
+
+  const prevStep = () => {
+    setStep((prev) => (prev > 1 ? prev - 1 : 1));
+  };
+
+  const resetWorkflow = () => {
+    setStep(1);
+
+    setForm({
+      ...defaultWorkflowState,
+      taskId,
+      plantId,
+    });
   };
 
   return {
     step,
     setStep,
+
+    nextStep,
+    prevStep,
+
     form,
     setForm,
     updateForm,
+
+    resetWorkflow,
   };
 }
 
 /**
- * 🔥 Deep merge helper (safe for nested workflow state)
+ * 🔥 Deep Merge Helper
+ * Supports nested objects safely
  */
-function deepMerge<T>(target: T, source: Partial<T>): T {
-  const output = { ...target };
+function deepMerge<T>(
+  target: T,
+  source: Partial<T>
+): T {
+  const output: any = { ...target };
 
   for (const key in source) {
-    const value = source[key];
+    const sourceValue: any = source[key];
+    const targetValue: any = output[key];
 
     if (
-      value &&
-      typeof value === "object" &&
-      !Array.isArray(value)
+      sourceValue &&
+      typeof sourceValue === "object" &&
+      !Array.isArray(sourceValue)
     ) {
-      output[key] = {
-        ...output[key],
-        ...value,
-      };
+      output[key] = deepMerge(
+        targetValue || {},
+        sourceValue
+      );
     } else {
-      output[key] = value as any;
+      output[key] = sourceValue;
     }
   }
 
-  return output;
+  return output as T;
 }
