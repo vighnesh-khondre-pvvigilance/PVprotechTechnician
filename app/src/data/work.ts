@@ -13,8 +13,8 @@ export const workData = [
     ownerName: "Mr. Sharma",
     plantName: "Sharma Solar Plant",
     capacity: "10kW",
-    beforeImage: "https://via.placeholder.com/300",
-    afterImage: "https://via.placeholder.com/300",
+    beforeImage: "https://images.unsplash.com/photo-1509391366360-2e959784a276",
+    afterImage: "https://images.unsplash.com/photo-1509391366360-2e959784a276",
   },
   {
     id: "2",

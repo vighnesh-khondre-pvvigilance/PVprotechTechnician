@@ -1,311 +1,341 @@
+import React, { useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
+  FlatList,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import Screen from "../src/components/Screen";
 
-import Screen from "./../src/components/Screen";
-import { Theme } from "./../src/theme/theme";
-import { workData } from "./../src/data/work";
-import { useAuth } from "./../src/context/AuthContext";
+import HeaderCard from "../src/components/home/HeaderCard";
+import StatsRow from "../src/components/home/StatsRow";
+import QuickSolveGrid from "../src/components/home/QuickSolveGrid";
+import RecentWorkList from "../src/components/home/RecentWorkList";
 
+import InverterCalc from "../src/components/toolbox/InverterCalc";
+import CleaningCalc from "../src/components/toolbox/CleaningCalc";
+import VocCalc from "../src/components/toolbox/VocCalc";
+import VoltageDrop from "../src/components/toolbox/VoltageDrop";
+import YieldCalc from "../src/components/toolbox/YieldCalc";
 
-export default function Home() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
+export default function HomeScreen() {
+  const [tool, setTool] = useState<string | null>(null);
+  const sheetRef = useRef<BottomSheet>(null);
 
-  const totalWork = workData.length;
-  const completedWork = 1;
-  const nextTask = workData[0];
+  const snapPoints = useMemo(() => ["65%"], []);
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 18) return "Good Afternoon";
-    return "Good Evening";
+  const openTool = (name: string) => {
+    setTool(name);
+    sheetRef.current?.expand();
   };
 
-  if (loading || !user) {
-    return (
-      <Screen>
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={Theme.colors.primary} />
-        </View>
-      </Screen>
-    );
-  }
+  const renderTool = () => {
+    switch (tool) {
+      case "Inverter":
+        return <InverterCalc />;
+      case "Cleaning":
+        return <CleaningCalc />;
+      case "VOC":
+        return <VocCalc />;
+      case "Voltage":
+        return <VoltageDrop />;
+      case "Yield":
+        return <YieldCalc />;
+      default:
+        return <Text style={{ padding: 20 }}>Select Tool</Text>;
+    }
+  };
+
+  const todaySchedule = [
+    {
+      id: "1",
+      time: "10:30 AM",
+      title: "Inspection - Hinjewadi",
+    },
+    {
+      id: "2",
+      time: "1:00 PM",
+      title: "Cleaning - Baner",
+    },
+    {
+      id: "3",
+      time: "4:00 PM",
+      title: "Maintenance - Wakad",
+    },
+  ];
 
   return (
     <Screen>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        
-        {/* 🔷 HEADER */}
-        <Animated.View entering={FadeInDown.delay(50)} style={styles.header}>
-          <View>
-            <Text style={styles.location}>📍 Pune</Text>
-            <Text style={styles.greeting}>
-              {getGreeting()} 👋
-            </Text>
-            <Text style={styles.username}>{user.name}</Text>
+      <View style={styles.container}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <HeaderCard />
+
+          {/* Stats */}
+          <StatsRow />
+
+          {/* Priority Alert */}
+          <View style={styles.alertCard}>
+            <Ionicons name="warning" size={22} color="#fff" />
+            <View style={{ marginLeft: 10 }}>
+              <Text style={styles.alertTitle}>High Priority Work</Text>
+              <Text style={styles.alertText}>
+                Inverter Fault - ABC Solar Plant
+              </Text>
+            </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.avatar}
-            onPress={() => router.push("/profile")}
-          >
-            <Text style={styles.avatarText}>
-              {user.name?.charAt(0)}
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
+          {/* Quick Tools */}
+         
+          <QuickSolveGrid onPress={openTool} />
 
-        {/* 📊 SUMMARY */}
-        <Animated.View entering={FadeInDown.delay(100)} style={styles.summaryRow}>
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>Assigned</Text>
-            <Text style={styles.cardValue}>{totalWork}</Text>
-          </View>
+          {/* Today Schedule */}
+          <Text style={styles.sectionTitle}>Today's Schedule</Text>
 
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>Completed</Text>
-            <Text style={styles.cardValue}>{completedWork}</Text>
-          </View>
-        </Animated.View>
+          {todaySchedule.map((item) => (
+            <View key={item.id} style={styles.scheduleCard}>
+              <View style={styles.timeBadge}>
+                <Text style={styles.timeText}>{item.time}</Text>
+              </View>
 
-        {/* 📈 PROGRESS */}
-        <Animated.View entering={FadeInDown.delay(150)} style={styles.progressBox}>
-          <Text style={styles.sectionTitle}>Progress</Text>
-          <Text style={styles.progressText}>
-            {completedWork} / {totalWork} Tasks Completed
-          </Text>
-        </Animated.View>
-
-        {/* ⚡ PERFORMANCE */}
-        <Animated.View entering={FadeInDown.delay(200)} style={styles.performanceCard}>
-          <Text style={styles.sectionTitle}>⚡ Today’s Generation</Text>
-          <Text style={styles.performanceValue}>120 kWh</Text>
-          <Text style={styles.performanceSub}>Expected: 150 kWh</Text>
-        </Animated.View>
-
-        {/* ⭐ NEXT TASK */}
-        {nextTask && (
-          <Animated.View entering={FadeInDown.delay(250)} style={styles.nextTask}>
-            <Text style={styles.sectionTitle}>Next Task</Text>
-
-            <Text style={styles.taskTitle}>{nextTask.title}</Text>
-            <Text style={styles.taskLocation}>{nextTask.location}</Text>
-
-            <TouchableOpacity
-              style={styles.startBtn}
-              onPress={() => router.push(`/work/${nextTask.id}`)}
-            >
-              <Text style={styles.startText}>Start Work</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
-
-        {/* 📋 TASK LIST */}
-        <Animated.View entering={FadeInDown.delay(300)} style={styles.listSection}>
-          <Text style={styles.sectionTitle}>Today’s Tasks</Text>
-
-          {workData.slice(0, 3).map((item) => (
-            <View key={item.id} style={styles.taskItem}>
-              <Text style={styles.taskTitle}>{item.title}</Text>
-              <Text style={styles.taskLocation}>{item.location}</Text>
+              <Text style={styles.scheduleTitle}>{item.title}</Text>
             </View>
           ))}
-        </Animated.View>
 
-        {/* ⚡ QUICK ACTIONS */}
-        <Animated.View entering={FadeInDown.delay(350)} style={styles.actions}>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Ionicons name="call-outline" size={18} />
-            <Text style={styles.actionText}>Call Admin</Text>
-          </TouchableOpacity>
+          {/* Solar Widget */}
+          <Text style={styles.sectionTitle}>Solar Conditions</Text>
 
-          <TouchableOpacity style={styles.actionBtn}>
-            <Ionicons name="cloud-upload-outline" size={18} />
-            <Text style={styles.actionText}>Upload</Text>
-          </TouchableOpacity>
-        </Animated.View>
+          <View style={styles.weatherCard}>
+            <View style={styles.weatherBox}>
+              <MaterialCommunityIcons
+                name="weather-sunny"
+                size={24}
+                color="#f59e0b"
+              />
+              <Text style={styles.weatherLabel}>Sun Hours</Text>
+              <Text style={styles.weatherValue}>6.2h</Text>
+            </View>
 
-      </ScrollView>
+            <View style={styles.weatherBox}>
+              <MaterialCommunityIcons
+                name="solar-power"
+                size={24}
+                color="#10b981"
+              />
+              <Text style={styles.weatherLabel}>Irradiance</Text>
+              <Text style={styles.weatherValue}>High</Text>
+            </View>
+
+            <View style={styles.weatherBox}>
+              <MaterialCommunityIcons
+                name="spray-bottle"
+                size={24}
+                color="#3b82f6"
+              />
+              <Text style={styles.weatherLabel}>Clean Time</Text>
+              <Text style={styles.weatherValue}>7 AM</Text>
+            </View>
+          </View>
+
+          {/* Recent Work */}
+          
+          <RecentWorkList />
+
+          {/* Weekly Performance */}
+          <Text style={styles.sectionTitle}>Weekly Performance</Text>
+
+          <View style={styles.performanceCard}>
+            <View style={styles.perfBox}>
+              <Text style={styles.perfNumber}>28</Text>
+              <Text style={styles.perfLabel}>Jobs</Text>
+            </View>
+
+
+            <View style={styles.perfBox}>
+              <Text style={styles.perfNumber}>4.8⭐</Text>
+              <Text style={styles.perfLabel}>Rating</Text>
+            </View>
+
+            <View style={styles.perfBox}>
+              <Text style={styles.perfNumber}>39m</Text>
+              <Text style={styles.perfLabel}>Avg Time</Text>
+            </View>
+          </View>
+
+          {/* Recent Activity */}
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+
+          <View style={styles.activityCard}>
+            <Text style={styles.activityText}>
+              ✔ Report submitted - Wakad Site
+            </Text>
+            <Text style={styles.activityText}>
+              ✔ Cleaning completed - Baner
+            </Text>
+            <Text style={styles.activityText}>
+              ✔ Photo uploaded - Hinjewadi
+            </Text>
+          </View>
+
+          <View style={{ height: 120 }} />
+        </ScrollView>
+
+        {/* Bottom Sheet */}
+        <BottomSheet
+          ref={sheetRef}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose
+        >
+          <View style={styles.sheet}>{renderTool()}</View>
+        </BottomSheet>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  loader: {
+  container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#f8fafc",
   },
 
-  /* HEADER */
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: Theme.spacing.lg,
-  },
-
-  location: {
-    fontSize: 12,
-    color: Theme.colors.subtext,
-  },
-
-  greeting: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-
-  username: {
-    fontSize: 14,
-    color: Theme.colors.subtext,
-  },
-
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Theme.colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  avatarText: {
-    color: "#fff",
-    fontWeight: "700",
-  },
-
-  /* SUMMARY */
-  summaryRow: {
-    flexDirection: "row",
-    marginBottom: Theme.spacing.md,
-  },
-
-  card: {
-    flex: 1,
-    backgroundColor: Theme.colors.card,
-    padding: Theme.spacing.md,
-    borderRadius: Theme.radius.md,
-    marginRight: Theme.spacing.sm,
-  },
-
-  cardLabel: {
-    fontSize: 12,
-    color: Theme.colors.subtext,
-  },
-
-  cardValue: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-
-  /* PROGRESS */
-  progressBox: {
-    backgroundColor: Theme.colors.card,
-    padding: Theme.spacing.md,
-    borderRadius: Theme.radius.md,
-    marginBottom: Theme.spacing.md,
-  },
-
-  progressText: {
-    marginTop: 4,
-    color: Theme.colors.subtext,
+  content: {
+    padding:2
   },
 
   sectionTitle: {
-    fontWeight: "600",
-    marginBottom: 6,
-  },
-
-  /* PERFORMANCE */
-  performanceCard: {
-    backgroundColor: "#ECFEFF",
-    padding: Theme.spacing.md,
-    borderRadius: Theme.radius.md,
-    marginBottom: Theme.spacing.md,
-  },
-
-  performanceValue: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "700",
+    marginTop: 18,
+    marginBottom: 12,
+    color: "#0f172a",
   },
 
-  performanceSub: {
-    fontSize: 12,
-    color: Theme.colors.subtext,
-  },
-
-  /* NEXT TASK */
-  nextTask: {
-    backgroundColor: Theme.colors.card,
-    padding: Theme.spacing.md,
-    borderRadius: Theme.radius.md,
-    marginBottom: Theme.spacing.md,
-  },
-
-  taskTitle: {
-    fontWeight: "600",
-  },
-
-  taskLocation: {
-    color: Theme.colors.subtext,
-    marginBottom: 8,
-  },
-
-  startBtn: {
-    backgroundColor: Theme.colors.primary,
-    padding: Theme.spacing.sm,
-    borderRadius: Theme.radius.sm,
+  alertCard: {
+    marginTop: 14,
+    backgroundColor: "#ef4444",
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: "row",
     alignItems: "center",
   },
 
-  startText: {
+  alertTitle: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+
+  alertText: {
+    color: "#fff",
+    marginTop: 3,
+    opacity: 0.95,
+  },
+
+  scheduleCard: {
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    elevation: 2,
+  },
+
+  timeBadge: {
+    backgroundColor: "#dbeafe",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+
+  timeText: {
+    color: "#2563eb",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+
+  scheduleTitle: {
+    marginLeft: 12,
     fontWeight: "600",
+    color: "#0f172a",
   },
 
-  /* LIST */
-  listSection: {
-    marginBottom: Theme.spacing.md,
-  },
-
-  taskItem: {
-    backgroundColor: Theme.colors.card,
-    padding: Theme.spacing.sm,
-    borderRadius: Theme.radius.sm,
-    marginBottom: Theme.spacing.sm,
-  },
-
-  /* ACTIONS */
-  actions: {
+  weatherCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 14,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: Theme.spacing.lg,
+    elevation: 2,
   },
 
-  actionBtn: {
-    flex: 1,
-    backgroundColor: Theme.colors.card,
-    padding: Theme.spacing.md,
-    borderRadius: Theme.radius.md,
-    marginRight: Theme.spacing.sm,
+  weatherBox: {
     alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 6,
+    flex: 1,
   },
 
-  actionText: {
+  weatherLabel: {
     fontSize: 12,
+    marginTop: 6,
+    color: "#64748b",
+  },
+
+  weatherValue: {
+    marginTop: 4,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+
+  performanceCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 18,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    elevation: 2,
+  },
+
+  perfBox: {
+    alignItems: "center",
+    flex: 1,
+  },
+
+  perfNumber: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#10b981",
+  },
+
+  perfLabel: {
+    marginTop: 4,
+    color: "#64748b",
+  },
+
+  activityCard: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 18,
+    elevation: 2,
+  },
+
+  activityText: {
+    marginBottom: 10,
+    color: "#334155",
+    fontWeight: "500",
+  },
+
+  sheet: {
+    flex: 1,
+    padding: 16,
   },
 });
