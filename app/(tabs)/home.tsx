@@ -22,6 +22,7 @@ import CleaningCalc from "../src/components/toolbox/CleaningCalc";
 import VocCalc from "../src/components/toolbox/VocCalc";
 import VoltageDrop from "../src/components/toolbox/VoltageDrop";
 import YieldCalc from "../src/components/toolbox/YieldCalc";
+import WeatherCard from "../src/components/home/WeatherCard";
 
 export default function HomeScreen() {
   const [tool, setTool] = useState<string | null>(null);
@@ -82,16 +83,7 @@ export default function HomeScreen() {
           {/* Stats */}
           <StatsRow />
 
-          {/* Priority Alert */}
-          <View style={styles.alertCard}>
-            <Ionicons name="warning" size={22} color="#fff" />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={styles.alertTitle}>High Priority Work</Text>
-              <Text style={styles.alertText}>
-                Inverter Fault - ABC Solar Plant
-              </Text>
-            </View>
-          </View>
+         
 
           {/* Quick Tools */}
          
@@ -111,79 +103,15 @@ export default function HomeScreen() {
           ))}
 
           {/* Solar Widget */}
-          <Text style={styles.sectionTitle}>Solar Conditions</Text>
-
-          <View style={styles.weatherCard}>
-            <View style={styles.weatherBox}>
-              <MaterialCommunityIcons
-                name="weather-sunny"
-                size={24}
-                color="#f59e0b"
-              />
-              <Text style={styles.weatherLabel}>Sun Hours</Text>
-              <Text style={styles.weatherValue}>6.2h</Text>
-            </View>
-
-            <View style={styles.weatherBox}>
-              <MaterialCommunityIcons
-                name="solar-power"
-                size={24}
-                color="#10b981"
-              />
-              <Text style={styles.weatherLabel}>Irradiance</Text>
-              <Text style={styles.weatherValue}>High</Text>
-            </View>
-
-            <View style={styles.weatherBox}>
-              <MaterialCommunityIcons
-                name="spray-bottle"
-                size={24}
-                color="#3b82f6"
-              />
-              <Text style={styles.weatherLabel}>Clean Time</Text>
-              <Text style={styles.weatherValue}>7 AM</Text>
-            </View>
-          </View>
+          <WeatherCard/>
 
           {/* Recent Work */}
           
           <RecentWorkList />
 
-          {/* Weekly Performance */}
-          <Text style={styles.sectionTitle}>Weekly Performance</Text>
+          
 
-          <View style={styles.performanceCard}>
-            <View style={styles.perfBox}>
-              <Text style={styles.perfNumber}>28</Text>
-              <Text style={styles.perfLabel}>Jobs</Text>
-            </View>
-
-
-            <View style={styles.perfBox}>
-              <Text style={styles.perfNumber}>4.8⭐</Text>
-              <Text style={styles.perfLabel}>Rating</Text>
-            </View>
-
-            <View style={styles.perfBox}>
-              <Text style={styles.perfNumber}>39m</Text>
-              <Text style={styles.perfLabel}>Avg Time</Text>
-            </View>
-          </View>
-
-          {/* Recent Activity */}
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-
-          <View style={styles.activityCard}>
-            <Text style={styles.activityText}>
-              ✔ Report submitted - Wakad Site
-            </Text>
-            <Text style={styles.activityText}>
-              ✔ Cleaning completed - Baner
-            </Text>
-            <Text style={styles.activityText}>
-              ✔ Photo uploaded - Hinjewadi
-            </Text>
-          </View>
+          
 
           <View style={{ height: 120 }} />
         </ScrollView>
@@ -206,6 +134,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
+    
   },
 
   content: {
