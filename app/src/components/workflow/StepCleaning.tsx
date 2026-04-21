@@ -6,8 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Alert,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { Theme } from "../../theme/theme";
+
+const MAX_LIMIT = 20;
 
 export default function StepCleaning({
   form,
@@ -15,64 +20,156 @@ export default function StepCleaning({
   onBack,
   onSubmit,
 }: any) {
-  const visitForm =
-    form?.visitForm || {};
+  const visitForm = form?.visitForm || {};
 
-  const cleaning =
-    form?.cleaning || {
-      required: false,
-      done: false,
-      before: [],
-      after: [],
-    };
+  const cleaning = form?.cleaning || {
+    required: false,
+    done: false,
+    before: [],
+    after: [],
+  };
 
-  const toggleRequired =
-    () => {
-      updateForm({
-        cleaning: {
-          ...cleaning,
-          required:
-            !cleaning.required,
-        },
+  /* Toggle Required */
+  const toggleRequired = () => {
+    updateForm({
+      cleaning: {
+        ...cleaning,
+        required: !cleaning.required,
+      },
+    });
+  };
+
+  /* Toggle Done */
+  const toggleDone = () => {
+    updateForm({
+      cleaning: {
+        ...cleaning,
+        done: !cleaning.done,
+      },
+    });
+  };
+
+  /* Pick Image */
+  const pickImage = async (
+    type: "before" | "after"
+  ) => {
+    const permission =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow gallery access."
+      );
+      return;
+    }
+
+    if (
+      cleaning[type].length >=
+      MAX_LIMIT
+    ) {
+      Alert.alert(
+        "Limit Reached",
+        `Maximum ${MAX_LIMIT} photos allowed`
+      );
+      return;
+    }
+
+    const result =
+      await ImagePicker.launchImageLibraryAsync({
+        mediaTypes:
+          ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+        allowsEditing: true,
       });
-    };
 
-  const toggleDone =
-    () => {
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+
       updateForm({
         cleaning: {
           ...cleaning,
-          done:
-            !cleaning.done,
-        },
-      });
-    };
-
-  const addBeforePhoto =
-    () => {
-      updateForm({
-        cleaning: {
-          ...cleaning,
-          before: [
-            ...cleaning.before,
-            "before.jpg",
+          [type]: [
+            ...cleaning[type],
+            uri,
           ],
         },
       });
-    };
+    }
+  };
 
-  const addAfterPhoto =
-    () => {
+  /* Camera */
+  const openCamera = async (
+    type: "before" | "after"
+  ) => {
+    const permission =
+      await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow camera access."
+      );
+      return;
+    }
+
+    if (
+      cleaning[type].length >=
+      MAX_LIMIT
+    ) {
+      Alert.alert(
+        "Limit Reached",
+        `Maximum ${MAX_LIMIT} photos allowed`
+      );
+      return;
+    }
+
+    const result =
+      await ImagePicker.launchCameraAsync({
+        quality: 0.7,
+        allowsEditing: true,
+      });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+
       updateForm({
         cleaning: {
           ...cleaning,
-          after: [
-            ...cleaning.after,
-            "after.jpg",
+          [type]: [
+            ...cleaning[type],
+            uri,
           ],
         },
       });
-    };
+    }
+  };
+
+  /* Choose Source */
+  const addPhoto = (
+    type: "before" | "after"
+  ) => {
+    Alert.alert(
+      "Upload Photo",
+      "Choose image source",
+      [
+        {
+          text: "Camera",
+          onPress: () =>
+            openCamera(type),
+        },
+        {
+          text: "Gallery",
+          onPress: () =>
+            pickImage(type),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
+  };
 
   return (
     <ScrollView
@@ -139,15 +236,18 @@ export default function StepCleaning({
           </Text>
         </TouchableOpacity>
 
-        {/* If Cleaning Required */}
+        {/* If Required */}
         {cleaning.required && (
           <>
+            {/* Before */}
             <TouchableOpacity
               style={
                 styles.uploadBtn
               }
-              onPress={
-                addBeforePhoto
+              onPress={() =>
+                addPhoto(
+                  "before"
+                )
               }
             >
               <Text>
@@ -157,28 +257,87 @@ export default function StepCleaning({
                     .before
                     .length
                 }
-                )
+                /20)
               </Text>
             </TouchableOpacity>
 
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={
+                false
+              }
+              style={{
+                marginBottom: 12,
+              }}
+            >
+              {cleaning.before.map(
+                (
+                  img: string,
+                  i: number
+                ) => (
+                  <Image
+                    key={i}
+                    source={{
+                      uri: img,
+                    }}
+                    style={
+                      styles.photo
+                    }
+                  />
+                )
+              )}
+            </ScrollView>
+
+            {/* After */}
             <TouchableOpacity
               style={
                 styles.uploadBtn
               }
-              onPress={
-                addAfterPhoto
+              onPress={() =>
+                addPhoto(
+                  "after"
+                )
               }
             >
               <Text>
                 After Photos (
                 {
-                  cleaning.after
+                  cleaning
+                    .after
                     .length
                 }
-                )
+                /20)
               </Text>
             </TouchableOpacity>
 
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={
+                false
+              }
+              style={{
+                marginBottom: 12,
+              }}
+            >
+              {cleaning.after.map(
+                (
+                  img: string,
+                  i: number
+                ) => (
+                  <Image
+                    key={i}
+                    source={{
+                      uri: img,
+                    }}
+                    style={
+                      styles.photo
+                    }
+                  />
+                )
+              )}
+            </ScrollView>
+
+            {/* Completed */}
             <TouchableOpacity
               style={[
                 styles.checkBox,
@@ -296,9 +455,16 @@ const styles =
         "#ddd",
       padding: 14,
       borderRadius: 14,
-      marginBottom: 12,
+      marginBottom: 10,
       alignItems:
         "center",
+    },
+
+    photo: {
+      width: 85,
+      height: 85,
+      borderRadius: 12,
+      marginRight: 8,
     },
 
     row: {

@@ -6,7 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Alert,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { Theme } from "../../theme/theme";
 
 export default function StepUpload({
@@ -17,20 +20,92 @@ export default function StepUpload({
 }: any) {
   const uploads = form?.uploads || {};
 
-  /**
-   * Dummy uploader
-   * Later replace with image picker / document picker
-   */
-  const uploadFile = (
-    field: string
-  ) => {
-    updateForm({
-      uploads: {
-        ...uploads,
-        [field]:
-          "https://via.placeholder.com/300",
-      },
-    });
+  /* 📸 Pick From Gallery */
+  const pickImage = async (field: string) => {
+    const permission =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow gallery access."
+      );
+      return;
+    }
+
+    const result =
+      await ImagePicker.launchImageLibraryAsync({
+        mediaTypes:
+          ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+        allowsEditing: true,
+      });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+
+      updateForm({
+        uploads: {
+          ...uploads,
+          [field]: uri,
+        },
+      });
+    }
+  };
+
+  /* 📷 Open Camera */
+  const openCamera = async (field: string) => {
+    const permission =
+      await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow camera access."
+      );
+      return;
+    }
+
+    const result =
+      await ImagePicker.launchCameraAsync({
+        quality: 0.7,
+        allowsEditing: true,
+      });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+
+      updateForm({
+        uploads: {
+          ...uploads,
+          [field]: uri,
+        },
+      });
+    }
+  };
+
+  /* 📂 Choose Source */
+  const uploadFile = (field: string) => {
+    Alert.alert(
+      "Upload File",
+      "Choose image source",
+      [
+        {
+          text: "Camera",
+          onPress: () =>
+            openCamera(field),
+        },
+        {
+          text: "Gallery",
+          onPress: () =>
+            pickImage(field),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
   };
 
   const Row = ({
@@ -42,8 +117,9 @@ export default function StepUpload({
       onPress={() =>
         uploadFile(field)
       }
+      activeOpacity={0.8}
     >
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={styles.rowTitle}>
           {title}
         </Text>
@@ -53,6 +129,15 @@ export default function StepUpload({
             ? "Uploaded ✓"
             : "Tap to Upload"}
         </Text>
+
+        {uploads[field] ? (
+          <Image
+            source={{
+              uri: uploads[field],
+            }}
+            style={styles.preview}
+          />
+        ) : null}
       </View>
 
       <Text style={styles.icon}>
@@ -178,7 +263,6 @@ const styles =
       borderRadius: 14,
       padding: 14,
       marginBottom: 12,
-
       flexDirection: "row",
       justifyContent:
         "space-between",
@@ -199,11 +283,19 @@ const styles =
         Theme.colors.gray,
     },
 
+    preview: {
+      width: 70,
+      height: 70,
+      borderRadius: 10,
+      marginTop: 10,
+    },
+
     icon: {
       fontSize: 22,
       fontWeight: "700",
       color:
         Theme.colors.primary,
+      marginLeft: 10,
     },
 
     row: {

@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Alert,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { Theme } from "../../theme/theme";
 
 type Props = {
@@ -25,21 +27,100 @@ export default function StepSafety({
   const verified = form?.safety?.verified;
   const image = form?.safety?.image;
 
+  /* ✅ Toggle Safety */
   const toggleSafety = () => {
     updateForm({
       safety: {
+        ...form?.safety,
         verified: !verified,
       },
     });
   };
 
-  const uploadDummyImage = () => {
-    updateForm({
-      safety: {
-        image:
-          "https://images.unsplash.com/photo-1509391366360-2e959784a276",
-      },
-    });
+  /* 📸 Pick from Gallery */
+  const pickImage = async () => {
+    const permission =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow gallery access."
+      );
+      return;
+    }
+
+    const result =
+      await ImagePicker.launchImageLibraryAsync({
+        mediaTypes:
+          ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+        allowsEditing: true,
+      });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+
+      updateForm({
+        safety: {
+          ...form?.safety,
+          image: uri,
+        },
+      });
+    }
+  };
+
+  /* 📷 Open Camera */
+  const openCamera = async () => {
+    const permission =
+      await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please allow camera access."
+      );
+      return;
+    }
+
+    const result =
+      await ImagePicker.launchCameraAsync({
+        quality: 0.7,
+        allowsEditing: true,
+      });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+
+      updateForm({
+        safety: {
+          ...form?.safety,
+          image: uri,
+        },
+      });
+    }
+  };
+
+  /* 📷 Select Option */
+  const chooseImage = () => {
+    Alert.alert(
+      "Upload Safety Image",
+      "Choose image source",
+      [
+        {
+          text: "Camera",
+          onPress: openCamera,
+        },
+        {
+          text: "Gallery",
+          onPress: pickImage,
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
   };
 
   return (
@@ -48,6 +129,7 @@ export default function StepSafety({
         Safety Verification
       </Text>
 
+      {/* PPE Checked */}
       <TouchableOpacity
         style={[
           styles.checkBox,
@@ -65,15 +147,17 @@ export default function StepSafety({
         </Text>
       </TouchableOpacity>
 
+      {/* Upload Button */}
       <TouchableOpacity
         style={styles.uploadBtn}
-        onPress={uploadDummyImage}
+        onPress={chooseImage}
       >
         <Text style={styles.uploadText}>
           Upload Safety Image
         </Text>
       </TouchableOpacity>
 
+      {/* Preview */}
       {image ? (
         <Image
           source={{ uri: image }}
@@ -81,6 +165,7 @@ export default function StepSafety({
         />
       ) : null}
 
+      {/* Buttons */}
       <View style={styles.row}>
         <TouchableOpacity
           style={styles.outlineBtn}
@@ -147,7 +232,7 @@ const styles = StyleSheet.create({
 
   preview: {
     width: "100%",
-    height: 180,
+    height: 190,
     borderRadius: 14,
     marginBottom: 14,
   },
