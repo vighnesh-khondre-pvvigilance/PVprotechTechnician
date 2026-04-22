@@ -44,7 +44,7 @@ export default function HeaderCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Theme.colors.secondary,
+    backgroundColor: Theme.colors.primary,
     padding: 18,
     borderRadius: 20,
     marginBottom: 14,

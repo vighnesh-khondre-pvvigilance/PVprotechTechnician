@@ -9,12 +9,14 @@ import {
   ScrollView,
 } from "react-native";
 import { Theme } from "../../theme/theme";
+import Screen from "../Screen";
 
 export default function StepApproval({
   visit,
   onNext,
 }: any) {
   return (
+    <Screen>
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.wrap}
@@ -120,6 +122,7 @@ export default function StepApproval({
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </Screen>
   );
 }
 
@@ -130,7 +133,7 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: "#fff",
-    padding: 18,
+    padding: 10,
     borderRadius: 18,
   },
 

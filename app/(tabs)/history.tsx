@@ -6,8 +6,16 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  TextInput,
+  RefreshControl,
 } from "react-native";
-import { useEffect, useState } from "react";
+
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -15,12 +23,17 @@ import Screen from "./../src/components/Screen";
 import { Theme } from "./../src/theme/theme";
 
 import { Work } from "../src/types/work";
+
 import {
   getCompletedWork,
   getTodayCompletedWork,
 } from "../src/services/workService";
 
-type FilterType = "all" | "today";
+type FilterType =
+  | "all"
+  | "today"
+  | "approved"
+  | "pending";
 
 export default function History() {
   const [filter, setFilter] =
@@ -29,29 +42,130 @@ export default function History() {
   const [data, setData] =
     useState<Work[]>([]);
 
+  const [search, setSearch] =
+    useState("");
+
   const [loading, setLoading] =
     useState(true);
 
+  const [refreshing, setRefreshing] =
+    useState(false);
+
   useEffect(() => {
     loadData();
-  }, [filter]);
+  }, []);
 
   const loadData = async () => {
     try {
       setLoading(true);
 
       const result =
-        filter === "today"
-          ? await getTodayCompletedWork()
-          : await getCompletedWork();
+        await getCompletedWork();
 
       setData(result);
     } catch (error) {
       console.log(error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  const onRefresh =
+    async () => {
+      setRefreshing(true);
+      await loadData();
+    };
+
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  const filteredData =
+    useMemo(() => {
+      let list = [...data];
+
+      if (filter === "today") {
+        list = list.filter(
+          (item) =>
+            item.completedDate ===
+            today
+        );
+      }
+
+      if (
+        filter ===
+        "approved"
+      ) {
+        list = list.filter(
+          (item) =>
+            item.adminApproval ===
+            "Approved"
+        );
+      }
+
+      if (
+        filter ===
+        "pending"
+      ) {
+        list = list.filter(
+          (item) =>
+            !item.adminApproval ||
+            item.adminApproval ===
+              "Pending"
+        );
+      }
+
+      if (search.trim()) {
+        const q =
+          search.toLowerCase();
+
+        list = list.filter(
+          (item) =>
+            item.title
+              ?.toLowerCase()
+              .includes(q) ||
+            item.clientName
+              ?.toLowerCase()
+              .includes(q) ||
+            item.plantName
+              ?.toLowerCase()
+              .includes(q) ||
+            item.location
+              ?.toLowerCase()
+              .includes(q)
+        );
+      }
+
+      return list;
+    }, [
+      data,
+      filter,
+      search,
+    ]);
+
+  const stats =
+    useMemo(() => {
+      return {
+        total:
+          data.length,
+
+        today:
+          data.filter(
+            (item) =>
+              item.completedDate ===
+              today
+          ).length,
+
+        approved:
+          data.filter(
+            (item) =>
+              item.adminApproval ===
+              "Approved"
+          ).length,
+      };
+    }, [data]);
 
   const formatDate = (
     date?: string
@@ -70,60 +184,325 @@ export default function History() {
     );
   };
 
-  /* Dummy approval logic */
-  const getApprovalStatus = (
-    id: string
-  ) => {
-    const approvedIds = [
-      "1",
-      "3",
-      "5",
-    ];
+  const renderItem = ({
+    item,
+  }: {
+    item: Work;
+  }) => {
+    const approval =
+      item.adminApproval ||
+      "Pending";
 
-    return approvedIds.includes(id)
-      ? "Approved"
-      : "Not Approved";
+    const isApproved =
+      approval ===
+      "Approved";
+
+    return (
+      <TouchableOpacity
+        activeOpacity={
+          0.85
+        }
+        style={
+          styles.card
+        }
+        onPress={() =>
+          router.push({
+            pathname:
+              "/history/[id]",
+            params: {
+              id: item.id,
+            },
+          })
+        }
+      >
+        {/* Top */}
+        <View
+          style={
+            styles.cardTop
+          }
+        >
+          <Text
+            style={
+              styles.titleText
+            }
+            numberOfLines={1}
+          >
+            {item.title}
+          </Text>
+
+          <View
+            style={
+              styles.doneBadge
+            }
+          >
+            <Text
+              style={
+                styles.doneText
+              }
+            >
+              Done
+            </Text>
+          </View>
+        </View>
+
+        {/* Client */}
+        <View
+          style={styles.row}
+        >
+          <Ionicons
+            name="business-outline"
+            size={14}
+            color="#64748B"
+          />
+
+          <Text
+            style={
+              styles.subText
+            }
+          >
+            {item.clientName ||
+              item.client}
+          </Text>
+        </View>
+
+        {/* Plant */}
+        <View
+          style={styles.row}
+        >
+          <Ionicons
+            name="leaf-outline"
+            size={14}
+            color="#64748B"
+          />
+
+          <Text
+            style={
+              styles.subText
+            }
+          >
+            {
+              item.plantName
+            }
+          </Text>
+        </View>
+
+        {/* Date */}
+        <View
+          style={styles.row}
+        >
+          <Ionicons
+            name="calendar-outline"
+            size={14}
+            color="#64748B"
+          />
+
+          <Text
+            style={
+              styles.subText
+            }
+          >
+            {formatDate(
+              item.completedDate
+            )}
+          </Text>
+        </View>
+
+        {/* Footer */}
+        <View
+          style={
+            styles.footer
+          }
+        >
+          <View
+            style={[
+              styles.status,
+              isApproved
+                ? styles.approved
+                : styles.pending,
+            ]}
+          >
+            <Ionicons
+              name={
+                isApproved
+                  ? "checkmark-circle"
+                  : "time"
+              }
+              size={14}
+              color={
+                isApproved
+                  ? "#16A34A"
+                  : "#F59E0B"
+              }
+            />
+
+            <Text
+              style={[
+                styles.statusText,
+                {
+                  color:
+                    isApproved
+                      ? "#16A34A"
+                      : "#F59E0B",
+                },
+              ]}
+            >
+              {approval}
+            </Text>
+          </View>
+
+          <Ionicons
+            name="chevron-forward"
+            size={18}
+            color="#94A3B8"
+          />
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   return (
     <Screen>
-      <Text style={styles.title}>
+      {/* Header */}
+      <Text
+        style={
+          styles.header
+        }
+      >
         Work History
       </Text>
 
-      {/* Filter */}
+      {/* Stats */}
       <View
         style={
-          styles.filterContainer
+          styles.statsRow
         }
       >
-        {(
-          [
-            "all",
-            "today",
-          ] as FilterType[]
-        ).map((item) => (
+        <View
+          style={
+            styles.statCard
+          }
+        >
+          <Text
+            style={
+              styles.statValue
+            }
+          >
+            {stats.total}
+          </Text>
+          <Text
+            style={
+              styles.statLabel
+            }
+          >
+            Total
+          </Text>
+        </View>
+
+        <View
+          style={
+            styles.statCard
+          }
+        >
+          <Text
+            style={
+              styles.statValue
+            }
+          >
+            {stats.today}
+          </Text>
+          <Text
+            style={
+              styles.statLabel
+            }
+          >
+            Today
+          </Text>
+        </View>
+
+        <View
+          style={
+            styles.statCard
+          }
+        >
+          <Text
+            style={
+              styles.statValue
+            }
+          >
+            {
+              stats.approved
+            }
+          </Text>
+          <Text
+            style={
+              styles.statLabel
+            }
+          >
+            Approved
+          </Text>
+        </View>
+      </View>
+
+      {/* Search */}
+      <View
+        style={
+          styles.searchBox
+        }
+      >
+        <Ionicons
+          name="search"
+          size={18}
+          color="#94A3B8"
+        />
+
+        <TextInput
+          style={
+            styles.input
+          }
+          placeholder="Search history..."
+          placeholderTextColor="#94A3B8"
+          value={search}
+          onChangeText={
+            setSearch
+          }
+        />
+      </View>
+
+      {/* Filters */}
+      <View
+        style={
+          styles.filterRow
+        }
+      >
+        {[
+          "all",
+          "today",
+          "approved",
+          "pending",
+        ].map((item) => (
           <TouchableOpacity
             key={item}
             style={[
-              styles.filterTab,
-              filter === item &&
+              styles.tab,
+              filter ===
+                item &&
                 styles.activeTab,
             ]}
             onPress={() =>
-              setFilter(item)
+              setFilter(
+                item as FilterType
+              )
             }
           >
             <Text
               style={[
-                styles.filterText,
-                filter === item &&
+                styles.tabText,
+                filter ===
+                  item &&
                   styles.activeText,
               ]}
             >
-              {item === "all"
-                ? "All"
-                : "Today"}
+              {item}
             </Text>
           </TouchableOpacity>
         ))}
@@ -131,31 +510,41 @@ export default function History() {
 
       {/* List */}
       <FlatList
-        data={data}
-        keyExtractor={(item) =>
-          item.id
+        data={
+          filteredData
+        }
+        keyExtractor={(
+          item
+        ) => item.id}
+        renderItem={
+          renderItem
         }
         showsVerticalScrollIndicator={
           false
         }
-        contentContainerStyle={{
-          paddingBottom: 20,
-        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={
+              refreshing
+            }
+            onRefresh={
+              onRefresh
+            }
+          />
+        }
         ListEmptyComponent={
           !loading ? (
             <View
               style={
-                styles.emptyContainer
+                styles.empty
               }
             >
               <Ionicons
                 name="folder-open-outline"
-                size={52}
-                color={
-                  Theme.colors
-                    .subtext
-                }
+                size={54}
+                color="#94A3B8"
               />
+
               <Text
                 style={
                   styles.emptyText
@@ -166,162 +555,8 @@ export default function History() {
             </View>
           ) : null
         }
-        renderItem={({
-          item,
-        }) => {
-         const approval =
-  item.adminApproval ||
-  "Pending";
-
-const isApproved =
-  approval === "Approved";
-
-         
-
-          return (
-            <TouchableOpacity
-              activeOpacity={
-                0.85
-              }
-              onPress={() =>
-                router.push({
-                  pathname:
-                    "/history/[id]",
-                  params: {
-                    id: item.id,
-                  },
-                })
-              }
-            >
-              <View
-                style={
-                  styles.card
-                }
-              >
-                {/* Top */}
-                <View
-                  style={
-                    styles.cardTop
-                  }
-                >
-                  <Text
-                    style={
-                      styles.cardTitle
-                    }
-                  >
-                    {item.title}
-                  </Text>
-
-                  <View
-                    style={
-                      styles.completedBadge
-                    }
-                  >
-                    <Text
-                      style={
-                        styles.completedText
-                      }
-                    >
-                      Completed
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Location */}
-                <View
-                  style={
-                    styles.row
-                  }
-                >
-                  <Ionicons
-                    name="location-outline"
-                    size={14}
-                    color={
-                      Theme
-                        .colors
-                        .subtext
-                    }
-                  />
-
-                  <Text
-                    style={
-                      styles.location
-                    }
-                  >
-                    {
-                      item.location
-                    }
-                  </Text>
-                </View>
-
-                {/* Date */}
-                <View
-                  style={
-                    styles.row
-                  }
-                >
-                  <Ionicons
-                    name="calendar-outline"
-                    size={14}
-                    color={
-                      Theme
-                        .colors
-                        .subtext
-                    }
-                  />
-
-                  <Text
-                    style={
-                      styles.date
-                    }
-                  >
-                    {formatDate(
-                      item.completedDate
-                    )}
-                  </Text>
-                </View>
-
-                {/* Approval Status */}
-                <View
-                  style={[
-                    styles.statusBox,
-                    isApproved
-                      ? styles.approvedBox
-                      : styles.pendingBox,
-                  ]}
-                >
-                  <Ionicons
-                    name={
-                      isApproved
-                        ? "checkmark-circle"
-                        : "time"
-                    }
-                    size={14}
-                    color={
-                      isApproved
-                        ? "#16A34A"
-                        : "#DC2626"
-                    }
-                  />
-
-                  <Text
-                    style={[
-                      styles.statusText,
-                      {
-                        color:
-                          isApproved
-                            ? "#16A34A"
-                            : "#DC2626",
-                      },
-                    ]}
-                  >
-                    Admin:{" "}
-                    {approval}
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
+        contentContainerStyle={{
+          paddingBottom: 30,
         }}
       />
     </Screen>
@@ -330,31 +565,77 @@ const isApproved =
 
 const styles =
   StyleSheet.create({
-    title: {
-      fontSize: 22,
-      fontWeight: "700",
-      marginBottom:
-        Theme.spacing.md,
+    header: {
+      fontSize: 24,
+      fontWeight:
+        "700",
+      marginBottom: 16,
     },
 
-    filterContainer: {
-      flexDirection: "row",
-      backgroundColor:
-        Theme.colors.card,
-      borderRadius:
-        Theme.radius.lg,
-      padding: 4,
-      marginBottom:
-        Theme.spacing.lg,
+    statsRow: {
+      flexDirection:
+        "row",
+      gap: 10,
+      marginBottom: 14,
     },
 
-    filterTab: {
+    statCard: {
       flex: 1,
-      paddingVertical: 8,
-      borderRadius:
-        Theme.radius.md,
+      backgroundColor:
+        "#fff",
+      borderRadius: 18,
+      padding: 14,
       alignItems:
         "center",
+    },
+
+    statValue: {
+      fontSize: 22,
+      fontWeight:
+        "700",
+      color:
+        Theme.colors.primary,
+    },
+
+    statLabel: {
+      fontSize: 12,
+      color: "#64748B",
+      marginTop: 4,
+    },
+
+    searchBox: {
+      flexDirection:
+        "row",
+      alignItems:
+        "center",
+      backgroundColor:
+        "#fff",
+      borderRadius: 16,
+      paddingHorizontal: 14,
+      marginBottom: 14,
+    },
+
+    input: {
+      flex: 1,
+      height: 48,
+      marginLeft: 8,
+    },
+
+    filterRow: {
+      flexDirection:
+        "row",
+      gap: 8,
+      flexWrap:
+        "wrap",
+      marginBottom: 14,
+    },
+
+    tab: {
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 30,
+      backgroundColor:
+        "#fff",
     },
 
     activeTab: {
@@ -362,11 +643,13 @@ const styles =
         Theme.colors.primary,
     },
 
-    filterText: {
+    tabText: {
+      color: "#475569",
+      fontWeight:
+        "600",
+      textTransform:
+        "capitalize",
       fontSize: 12,
-      color:
-        Theme.colors.subtext,
-      fontWeight: "500",
     },
 
     activeText: {
@@ -375,96 +658,102 @@ const styles =
 
     card: {
       backgroundColor:
-        Theme.colors.card,
-      padding:
-        Theme.spacing.md,
-      borderRadius:
-        Theme.radius.lg,
-      marginBottom:
-        Theme.spacing.md,
-      elevation: 2,
+        "#fff",
+      padding: 16,
+      borderRadius: 18,
+      marginBottom: 12,
     },
 
     cardTop: {
-      flexDirection: "row",
+      flexDirection:
+        "row",
       justifyContent:
         "space-between",
-      marginBottom: 6,
+      marginBottom: 8,
     },
 
-    cardTitle: {
-      fontSize: 15,
-      fontWeight: "700",
+    titleText: {
       flex: 1,
+      fontSize: 15,
+      fontWeight:
+        "700",
       marginRight: 8,
     },
 
-    completedBadge: {
+    doneBadge: {
       backgroundColor:
-        "#E8F7EE",
+        "#DCFCE7",
       paddingHorizontal: 8,
       paddingVertical: 4,
       borderRadius: 8,
     },
 
-    completedText: {
-      color: "green",
+    doneText: {
       fontSize: 11,
-      fontWeight: "700",
+      fontWeight:
+        "700",
+      color: "#16A34A",
     },
 
     row: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 5,
-      marginTop: 5,
-    },
-
-    location: {
-      fontSize: 12,
-      color:
-        Theme.colors.subtext,
-    },
-
-    date: {
-      fontSize: 12,
-      color:
-        Theme.colors.subtext,
-    },
-
-    statusBox: {
-      marginTop: 12,
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection:
+        "row",
       gap: 6,
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-      borderRadius: 10,
+      marginTop: 6,
+      alignItems:
+        "center",
     },
 
-    approvedBox: {
+    subText: {
+      fontSize: 12,
+      color: "#64748B",
+    },
+
+    footer: {
+      marginTop: 14,
+      flexDirection:
+        "row",
+      justifyContent:
+        "space-between",
+      alignItems:
+        "center",
+    },
+
+    status: {
+      flexDirection:
+        "row",
+      gap: 6,
+      alignItems:
+        "center",
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 20,
+    },
+
+    approved: {
       backgroundColor:
         "#F0FDF4",
     },
 
-    pendingBox: {
+    pending: {
       backgroundColor:
-        "#FEF2F2",
+        "#FFF7ED",
     },
 
     statusText: {
       fontSize: 12,
-      fontWeight: "700",
+      fontWeight:
+        "700",
     },
 
-    emptyContainer: {
-      alignItems: "center",
-      marginTop: 60,
+    empty: {
+      alignItems:
+        "center",
+      marginTop: 80,
     },
 
     emptyText: {
       marginTop: 10,
-      color:
-        Theme.colors.subtext,
+      color: "#64748B",
     },
   });

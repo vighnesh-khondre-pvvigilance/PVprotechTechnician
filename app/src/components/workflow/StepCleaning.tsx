@@ -1,5 +1,6 @@
 // src/components/workflow/StepCleaning.tsx
 
+import React from "react";
 import {
   View,
   Text,
@@ -10,6 +11,7 @@ import {
   Image,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { Theme } from "../../theme/theme";
 
 const MAX_LIMIT = 20;
@@ -49,7 +51,38 @@ export default function StepCleaning({
     });
   };
 
-  /* Pick Image */
+  /* Add Photo */
+  const savePhoto = (
+    type: "before" | "after",
+    uri: string
+  ) => {
+    updateForm({
+      cleaning: {
+        ...cleaning,
+        [type]: [
+          ...cleaning[type],
+          uri,
+        ],
+      },
+    });
+  };
+
+  const checkLimit = (
+    type: "before" | "after"
+  ) => {
+    if (
+      cleaning[type].length >=
+      MAX_LIMIT
+    ) {
+      Alert.alert(
+        "Limit Reached",
+        `Maximum ${MAX_LIMIT} photos allowed`
+      );
+      return true;
+    }
+    return false;
+  };
+
   const pickImage = async (
     type: "before" | "after"
   ) => {
@@ -64,41 +97,24 @@ export default function StepCleaning({
       return;
     }
 
-    if (
-      cleaning[type].length >=
-      MAX_LIMIT
-    ) {
-      Alert.alert(
-        "Limit Reached",
-        `Maximum ${MAX_LIMIT} photos allowed`
-      );
-      return;
-    }
+    if (checkLimit(type)) return;
 
     const result =
       await ImagePicker.launchImageLibraryAsync({
         mediaTypes:
           ImagePicker.MediaTypeOptions.Images,
-        quality: 0.7,
+        quality: 0.8,
         allowsEditing: true,
       });
 
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
-
-      updateForm({
-        cleaning: {
-          ...cleaning,
-          [type]: [
-            ...cleaning[type],
-            uri,
-          ],
-        },
-      });
+      savePhoto(
+        type,
+        result.assets[0].uri
+      );
     }
   };
 
-  /* Camera */
   const openCamera = async (
     type: "before" | "after"
   ) => {
@@ -113,39 +129,22 @@ export default function StepCleaning({
       return;
     }
 
-    if (
-      cleaning[type].length >=
-      MAX_LIMIT
-    ) {
-      Alert.alert(
-        "Limit Reached",
-        `Maximum ${MAX_LIMIT} photos allowed`
-      );
-      return;
-    }
+    if (checkLimit(type)) return;
 
     const result =
       await ImagePicker.launchCameraAsync({
-        quality: 0.7,
+        quality: 0.8,
         allowsEditing: true,
       });
 
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
-
-      updateForm({
-        cleaning: {
-          ...cleaning,
-          [type]: [
-            ...cleaning[type],
-            uri,
-          ],
-        },
-      });
+      savePhoto(
+        type,
+        result.assets[0].uri
+      );
     }
   };
 
-  /* Choose Source */
   const addPhoto = (
     type: "before" | "after"
   ) => {
@@ -171,13 +170,115 @@ export default function StepCleaning({
     );
   };
 
+  const removePhoto = (
+    type: "before" | "after",
+    index: number
+  ) => {
+    const updated =
+      cleaning[type].filter(
+        (_: any, i: number) =>
+          i !== index
+      );
+
+    updateForm({
+      cleaning: {
+        ...cleaning,
+        [type]: updated,
+      },
+    });
+  };
+
+  const PhotoSection = ({
+    title,
+    type,
+  }: any) => (
+    <View style={styles.section}>
+      <View style={styles.head}>
+        <Text style={styles.sectionTitle}>
+          {title}
+        </Text>
+
+        <Text style={styles.count}>
+          {
+            cleaning[type]
+              .length
+          }
+          /20
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={styles.uploadBtn}
+        onPress={() =>
+          addPhoto(type)
+        }
+      >
+        <Text style={styles.uploadText}>
+          + Add Photo
+        </Text>
+      </TouchableOpacity>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={
+          false
+        }
+      >
+        {cleaning[type].map(
+          (
+            img: string,
+            i: number
+          ) => (
+            <View
+              key={i}
+              style={
+                styles.photoWrap
+              }
+            >
+              <Image
+                source={{
+                  uri: img,
+                }}
+                style={
+                  styles.photo
+                }
+              />
+
+              <TouchableOpacity
+                style={
+                  styles.removeIcon
+                }
+                onPress={() =>
+                  removePhoto(
+                    type,
+                    i
+                  )
+                }
+              >
+                <Text
+                  style={{
+                    color:
+                      "#fff",
+                    fontSize: 10,
+                  }}
+                >
+                  ✕
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )
+        )}
+      </ScrollView>
+    </View>
+  );
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={
         false
       }
       contentContainerStyle={{
-        paddingBottom: 20,
+        paddingBottom: 30,
       }}
     >
       <View style={styles.card}>
@@ -187,34 +288,40 @@ export default function StepCleaning({
 
         {/* Summary */}
         <View style={styles.summary}>
-          <Text style={styles.text}>
-            Inverter Status:{" "}
+          <Text style={styles.label}>
+            Inverter
+          </Text>
+          <Text style={styles.value}>
             {
               visitForm.inverterStatus
             }
           </Text>
 
-          <Text style={styles.text}>
-            Generation:{" "}
+          <Text style={styles.label}>
+            Generation
+          </Text>
+          <Text style={styles.value}>
             {
               visitForm.generationReading
             }
           </Text>
 
-          <Text style={styles.text}>
-            Technician:{" "}
+          <Text style={styles.label}>
+            Technician
+          </Text>
+          <Text style={styles.value}>
             {
               visitForm.technicianId
             }
           </Text>
         </View>
 
-        {/* Cleaning Required */}
+        {/* Required */}
         <TouchableOpacity
           style={[
-            styles.checkBox,
+            styles.toggle,
             cleaning.required &&
-              styles.activeCheck,
+              styles.activeToggle,
           ]}
           onPress={
             toggleRequired
@@ -222,7 +329,7 @@ export default function StepCleaning({
         >
           <Text
             style={[
-              styles.checkText,
+              styles.toggleText,
               cleaning.required && {
                 color:
                   "#fff",
@@ -236,113 +343,23 @@ export default function StepCleaning({
           </Text>
         </TouchableOpacity>
 
-        {/* If Required */}
         {cleaning.required && (
           <>
-            {/* Before */}
-            <TouchableOpacity
-              style={
-                styles.uploadBtn
-              }
-              onPress={() =>
-                addPhoto(
-                  "before"
-                )
-              }
-            >
-              <Text>
-                Before Photos (
-                {
-                  cleaning
-                    .before
-                    .length
-                }
-                /20)
-              </Text>
-            </TouchableOpacity>
+            <PhotoSection
+              title="Before Cleaning"
+              type="before"
+            />
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={
-                false
-              }
-              style={{
-                marginBottom: 12,
-              }}
-            >
-              {cleaning.before.map(
-                (
-                  img: string,
-                  i: number
-                ) => (
-                  <Image
-                    key={i}
-                    source={{
-                      uri: img,
-                    }}
-                    style={
-                      styles.photo
-                    }
-                  />
-                )
-              )}
-            </ScrollView>
+            <PhotoSection
+              title="After Cleaning"
+              type="after"
+            />
 
-            {/* After */}
-            <TouchableOpacity
-              style={
-                styles.uploadBtn
-              }
-              onPress={() =>
-                addPhoto(
-                  "after"
-                )
-              }
-            >
-              <Text>
-                After Photos (
-                {
-                  cleaning
-                    .after
-                    .length
-                }
-                /20)
-              </Text>
-            </TouchableOpacity>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={
-                false
-              }
-              style={{
-                marginBottom: 12,
-              }}
-            >
-              {cleaning.after.map(
-                (
-                  img: string,
-                  i: number
-                ) => (
-                  <Image
-                    key={i}
-                    source={{
-                      uri: img,
-                    }}
-                    style={
-                      styles.photo
-                    }
-                  />
-                )
-              )}
-            </ScrollView>
-
-            {/* Completed */}
             <TouchableOpacity
               style={[
-                styles.checkBox,
+                styles.toggle,
                 cleaning.done &&
-                  styles.activeCheck,
+                  styles.activeToggle,
               ]}
               onPress={
                 toggleDone
@@ -350,7 +367,7 @@ export default function StepCleaning({
             >
               <Text
                 style={[
-                  styles.checkText,
+                  styles.toggleText,
                   cleaning.done && {
                     color:
                       "#fff",
@@ -360,8 +377,7 @@ export default function StepCleaning({
                 {cleaning.done
                   ? "✓ "
                   : ""}
-                Cleaning
-                Completed
+                Cleaning Completed
               </Text>
             </TouchableOpacity>
           </>
@@ -371,28 +387,44 @@ export default function StepCleaning({
         <View style={styles.row}>
           <TouchableOpacity
             style={
-              styles.outlineBtn
+              styles.backBtn
             }
             onPress={onBack}
           >
-            <Text>
+            <Text
+              style={
+                styles.backText
+              }
+            >
               Back
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.btn}
+            style={{
+              flex: 1,
+            }}
             onPress={
               onSubmit
             }
           >
-            <Text
+            <LinearGradient
+              colors={[
+                "#F59E0B",
+                "#D97706",
+              ]}
               style={
-                styles.btnText
+                styles.submitBtn
               }
             >
-              Submit Visit
-            </Text>
+              <Text
+                style={
+                  styles.submitText
+                }
+              >
+                Submit Visit
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
@@ -406,12 +438,12 @@ const styles =
       backgroundColor:
         "#fff",
       padding: 18,
-      borderRadius: 18,
+      borderRadius: 24,
     },
 
     title: {
-      fontSize: 22,
-      fontWeight: "700",
+      fontSize: 26,
+      fontWeight: "800",
       marginBottom: 16,
       color:
         Theme.colors.text,
@@ -419,83 +451,154 @@ const styles =
 
     summary: {
       backgroundColor:
-        "#F9FAFB",
-      padding: 14,
-      borderRadius: 14,
+        "#F8FAFC",
+      padding: 16,
+      borderRadius: 18,
       marginBottom: 16,
     },
 
-    text: {
-      marginBottom: 8,
-      fontWeight: "500",
+    label: {
+      fontSize: 12,
+      color:
+        Theme.colors.subtext,
+      marginTop: 6,
     },
 
-    checkBox: {
+    value: {
+      fontSize: 15,
+      fontWeight: "700",
+      color:
+        Theme.colors.text,
+    },
+
+    toggle: {
       backgroundColor:
         "#EEF2FF",
       padding: 15,
-      borderRadius: 14,
-      marginBottom: 12,
+      borderRadius: 16,
+      marginBottom: 14,
+      alignItems:
+        "center",
     },
 
-    activeCheck: {
+    activeToggle: {
       backgroundColor:
         Theme.colors.primary,
     },
 
-    checkText: {
+    toggleText: {
+      fontWeight: "800",
+      color:
+        Theme.colors.text,
+    },
+
+    section: {
+      marginBottom: 16,
+    },
+
+    head: {
+      flexDirection: "row",
+      justifyContent:
+        "space-between",
+      marginBottom: 10,
+    },
+
+    sectionTitle: {
       fontWeight: "700",
-      textAlign:
-        "center",
+      fontSize: 15,
+      color:
+        Theme.colors.text,
+    },
+
+    count: {
+      fontSize: 12,
+      color:
+        Theme.colors.subtext,
     },
 
     uploadBtn: {
       borderWidth: 1,
       borderColor:
-        "#ddd",
+        "#E5E7EB",
+      borderStyle:
+        "dashed",
       padding: 14,
-      borderRadius: 14,
-      marginBottom: 10,
+      borderRadius: 16,
       alignItems:
         "center",
+      marginBottom: 12,
+      backgroundColor:
+        "#fff",
+    },
+
+    uploadText: {
+      fontWeight: "700",
+      color:
+        Theme.colors.text,
+    },
+
+    photoWrap: {
+      marginRight: 10,
+      position:
+        "relative",
     },
 
     photo: {
-      width: 85,
-      height: 85,
-      borderRadius: 12,
-      marginRight: 8,
+      width: 92,
+      height: 92,
+      borderRadius: 16,
+    },
+
+    removeIcon: {
+      position:
+        "absolute",
+      top: 6,
+      right: 6,
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor:
+        "rgba(0,0,0,0.6)",
+      alignItems:
+        "center",
+      justifyContent:
+        "center",
     },
 
     row: {
       flexDirection: "row",
-      gap: 10,
-      marginTop: 16,
+      gap: 12,
+      marginTop: 10,
     },
 
-    outlineBtn: {
+    backBtn: {
       flex: 1,
       borderWidth: 1,
       borderColor:
-        "#ddd",
-      padding: 14,
-      borderRadius: 14,
+        "#E5E7EB",
+      borderRadius: 16,
+      padding: 15,
       alignItems:
+        "center",
+      justifyContent:
         "center",
     },
 
-    btn: {
-      flex: 1,
-      backgroundColor:
-        Theme.colors.primary,
-      padding: 14,
-      borderRadius: 14,
-      alignItems:
-        "center",
-    },
-
-    btnText: {
-      color: "#fff",
+    backText: {
       fontWeight: "700",
+      color:
+        Theme.colors.text,
+    },
+
+    submitBtn: {
+      padding: 15,
+      borderRadius: 16,
+      alignItems:
+        "center",
+    },
+
+    submitText: {
+      color: "#fff",
+      fontWeight: "800",
     },
   });

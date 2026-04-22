@@ -227,7 +227,7 @@ export default function WorkDetailsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 18,
+    padding: 14,
     paddingBottom: 50,
   },
 

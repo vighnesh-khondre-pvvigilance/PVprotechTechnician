@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Theme } from "../../theme/theme";
 import { useEffect } from "react";
+import Screen from "../Screen";
 
 type Props = {
   form: any;
@@ -66,6 +67,7 @@ const visitDateValue =
     .split("T")[0];
 
   return (
+    <Screen>
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
@@ -266,6 +268,7 @@ const visitDateValue =
         </View>
       </View>
     </ScrollView>
+    </Screen>
   );
 }
 
@@ -274,7 +277,7 @@ const styles =
     card: {
       backgroundColor:
         "#fff",
-      padding: 18,
+      padding: 12,
       borderRadius: 18,
     },
 

@@ -5,30 +5,30 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 
 import Screen from "../src/components/Screen";
-
 import HeaderCard from "../src/components/home/HeaderCard";
 import StatsRow from "../src/components/home/StatsRow";
 import QuickSolveGrid from "../src/components/home/QuickSolveGrid";
 import RecentWorkList from "../src/components/home/RecentWorkList";
+import WeatherCard from "../src/components/home/WeatherCard";
 
 import InverterCalc from "../src/components/toolbox/InverterCalc";
 import CleaningCalc from "../src/components/toolbox/CleaningCalc";
 import VocCalc from "../src/components/toolbox/VocCalc";
 import VoltageDrop from "../src/components/toolbox/VoltageDrop";
 import YieldCalc from "../src/components/toolbox/YieldCalc";
-import WeatherCard from "../src/components/home/WeatherCard";
+
+import { Theme } from "../src/theme/theme";
 
 export default function HomeScreen() {
   const [tool, setTool] = useState<string | null>(null);
   const sheetRef = useRef<BottomSheet>(null);
 
-  const snapPoints = useMemo(() => ["65%"], []);
+  const snapPoints = useMemo(() => ["68%"], []);
 
   const openTool = (name: string) => {
     setTool(name);
@@ -48,7 +48,11 @@ export default function HomeScreen() {
       case "Yield":
         return <YieldCalc />;
       default:
-        return <Text style={{ padding: 20 }}>Select Tool</Text>;
+        return (
+          <Text style={styles.emptyText}>
+            Select a tool from Quick Solve
+          </Text>
+        );
     }
   };
 
@@ -57,16 +61,19 @@ export default function HomeScreen() {
       id: "1",
       time: "10:30 AM",
       title: "Inspection - Hinjewadi",
+      icon: "clipboard-check-outline",
     },
     {
       id: "2",
       time: "1:00 PM",
       title: "Cleaning - Baner",
+      icon: "spray-bottle",
     },
     {
       id: "3",
       time: "4:00 PM",
       title: "Maintenance - Wakad",
+      icon: "tools",
     },
   ];
 
@@ -83,35 +90,51 @@ export default function HomeScreen() {
           {/* Stats */}
           <StatsRow />
 
-         
-
           {/* Quick Tools */}
-         
+          
           <QuickSolveGrid onPress={openTool} />
 
-          {/* Today Schedule */}
-          <Text style={styles.sectionTitle}>Today's Schedule</Text>
+          {/* Today's Work */}
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>Today's Schedule</Text>
+
+            <TouchableOpacity>
+              <Text style={styles.linkText}>View All</Text>
+            </TouchableOpacity>
+          </View>
 
           {todaySchedule.map((item) => (
-            <View key={item.id} style={styles.scheduleCard}>
-              <View style={styles.timeBadge}>
-                <Text style={styles.timeText}>{item.time}</Text>
+            <TouchableOpacity key={item.id} style={styles.scheduleCard}>
+              <View style={styles.leftRow}>
+                <View style={styles.iconBox}>
+                  <MaterialCommunityIcons
+                    name={item.icon as any}
+                    size={22}
+                    color={Theme.colors.primary}
+                  />
+                </View>
+
+                <View>
+                  <Text style={styles.scheduleTitle}>{item.title}</Text>
+                  <Text style={styles.timeText}>{item.time}</Text>
+                </View>
               </View>
 
-              <Text style={styles.scheduleTitle}>{item.title}</Text>
-            </View>
+              <Ionicons
+                name="chevron-forward"
+                size={18}
+                color={Theme.colors.subtext}
+              />
+            </TouchableOpacity>
           ))}
 
-          {/* Solar Widget */}
-          <WeatherCard/>
+          {/* Weather */}
+          <Text style={styles.sectionTitle}>Site Weather</Text>
+          <WeatherCard />
 
           {/* Recent Work */}
           
           <RecentWorkList />
-
-          
-
-          
 
           <View style={{ height: 120 }} />
         </ScrollView>
@@ -122,6 +145,8 @@ export default function HomeScreen() {
           index={-1}
           snapPoints={snapPoints}
           enablePanDownToClose
+          backgroundStyle={styles.sheetBg}
+          handleIndicatorStyle={styles.sheetHandle}
         >
           <View style={styles.sheet}>{renderTool()}</View>
         </BottomSheet>
@@ -133,138 +158,95 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8fafc",
-    
+    backgroundColor: Theme.colors.background,
   },
 
   content: {
-    padding:2
+   padding:5,
+    paddingTop: Theme.spacing.sm,
+    paddingBottom: Theme.spacing.xl,
+  },
+
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    marginTop: 18,
-    marginBottom: 12,
-    color: "#0f172a",
+    color: Theme.colors.secondary,
+    marginTop: Theme.spacing.lg,
+    marginBottom: Theme.spacing.sm,
   },
 
-  alertCard: {
-    marginTop: 14,
-    backgroundColor: "#ef4444",
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  alertTitle: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 15,
-  },
-
-  alertText: {
-    color: "#fff",
-    marginTop: 3,
-    opacity: 0.95,
+  linkText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Theme.colors.primary,
   },
 
   scheduleCard: {
-    backgroundColor: "#fff",
-    padding: 14,
-    borderRadius: 14,
-    marginBottom: 10,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.md,
+    marginBottom: Theme.spacing.sm,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
+  },
+
+  leftRow: {
     flexDirection: "row",
     alignItems: "center",
-    elevation: 2,
+    flex: 1,
   },
 
-  timeBadge: {
-    backgroundColor: "#dbeafe",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-
-  timeText: {
-    color: "#2563eb",
-    fontWeight: "700",
-    fontSize: 12,
+  iconBox: {
+    width: 46,
+    height: 46,
+    borderRadius: Theme.radius.md,
+    backgroundColor: "#FEF3C7",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: Theme.spacing.md,
   },
 
   scheduleTitle: {
-    marginLeft: 12,
-    fontWeight: "600",
-    color: "#0f172a",
-  },
-
-  weatherCard: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    padding: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    elevation: 2,
-  },
-
-  weatherBox: {
-    alignItems: "center",
-    flex: 1,
-  },
-
-  weatherLabel: {
-    fontSize: 12,
-    marginTop: 6,
-    color: "#64748b",
-  },
-
-  weatherValue: {
-    marginTop: 4,
+    fontSize: 15,
     fontWeight: "700",
-    color: "#0f172a",
+    color: Theme.colors.text,
   },
 
-  performanceCard: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    padding: 18,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    elevation: 2,
-  },
-
-  perfBox: {
-    alignItems: "center",
-    flex: 1,
-  },
-
-  perfNumber: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#10b981",
-  },
-
-  perfLabel: {
+  timeText: {
     marginTop: 4,
-    color: "#64748b",
+    fontSize: 13,
+    color: Theme.colors.subtext,
   },
 
-  activityCard: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 18,
-    elevation: 2,
+  sheetBg: {
+    backgroundColor: Theme.colors.card,
+    borderTopLeftRadius: Theme.radius.xl,
+    borderTopRightRadius: Theme.radius.xl,
   },
 
-  activityText: {
-    marginBottom: 10,
-    color: "#334155",
-    fontWeight: "500",
+  sheetHandle: {
+    backgroundColor: Theme.colors.border,
+    width: 55,
   },
 
   sheet: {
     flex: 1,
-    padding: 16,
+    padding: Theme.spacing.md,
+  },
+
+  emptyText: {
+    color: Theme.colors.subtext,
+    fontSize: 15,
+    textAlign: "center",
+    marginTop: 30,
   },
 });

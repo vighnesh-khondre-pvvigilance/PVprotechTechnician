@@ -1,5 +1,6 @@
 // src/components/workflow/StepSafety.tsx
 
+import React from "react";
 import {
   View,
   Text,
@@ -7,9 +8,11 @@ import {
   StyleSheet,
   Image,
   Alert,
+  ScrollView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Theme } from "../../theme/theme";
+import Screen from "../Screen";
 
 type Props = {
   form: any;
@@ -24,10 +27,10 @@ export default function StepSafety({
   onNext,
   onBack,
 }: Props) {
-  const verified = form?.safety?.verified;
-  const image = form?.safety?.image;
+  const verified = form?.safety?.verified || false;
+  const image = form?.safety?.image || null;
 
-  /* ✅ Toggle Safety */
+  /* Toggle PPE Checked */
   const toggleSafety = () => {
     updateForm({
       safety: {
@@ -37,7 +40,7 @@ export default function StepSafety({
     });
   };
 
-  /* 📸 Pick from Gallery */
+  /* Pick From Gallery */
   const pickImage = async () => {
     const permission =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -70,7 +73,7 @@ export default function StepSafety({
     }
   };
 
-  /* 📷 Open Camera */
+  /* Open Camera */
   const openCamera = async () => {
     const permission =
       await ImagePicker.requestCameraPermissionsAsync();
@@ -101,7 +104,7 @@ export default function StepSafety({
     }
   };
 
-  /* 📷 Select Option */
+  /* Camera / Gallery Option */
   const chooseImage = () => {
     Alert.alert(
       "Upload Safety Image",
@@ -123,67 +126,110 @@ export default function StepSafety({
     );
   };
 
+  /* Remove Image */
+  const removeImage = () => {
+    updateForm({
+      safety: {
+        ...form?.safety,
+        image: null,
+      },
+    });
+  };
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>
-        Safety Verification
-      </Text>
+    <Screen>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    >
+      <View style={styles.card}>
+        <Text style={styles.title}>
+          Safety Verification
+        </Text>
 
-      {/* PPE Checked */}
-      <TouchableOpacity
-        style={[
-          styles.checkBox,
-          verified && styles.activeBox,
-        ]}
-        onPress={toggleSafety}
-      >
-        <Text
+        {/* PPE Checkbox */}
+        <TouchableOpacity
           style={[
-            styles.checkText,
-            verified && { color: "#fff" },
+            styles.checkBox,
+            verified && styles.activeBox,
           ]}
+          onPress={toggleSafety}
         >
-          {verified ? "✓ " : ""}PPE Checked
-        </Text>
-      </TouchableOpacity>
-
-      {/* Upload Button */}
-      <TouchableOpacity
-        style={styles.uploadBtn}
-        onPress={chooseImage}
-      >
-        <Text style={styles.uploadText}>
-          Upload Safety Image
-        </Text>
-      </TouchableOpacity>
-
-      {/* Preview */}
-      {image ? (
-        <Image
-          source={{ uri: image }}
-          style={styles.preview}
-        />
-      ) : null}
-
-      {/* Buttons */}
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={styles.outlineBtn}
-          onPress={onBack}
-        >
-          <Text>Back</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.btn}
-          onPress={onNext}
-        >
-          <Text style={styles.btnText}>
-            Continue
+          <Text
+            style={[
+              styles.checkText,
+              verified && {
+                color: "#fff",
+              },
+            ]}
+          >
+            {verified ? "✓ " : ""}
+            PPE Checked
           </Text>
         </TouchableOpacity>
+
+        {/* Upload Button */}
+        <TouchableOpacity
+          style={styles.uploadBtn}
+          onPress={chooseImage}
+        >
+          <Text style={styles.uploadText}>
+            {image
+              ? "Change Safety Image"
+              : "Upload Safety Image"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Image Preview */}
+        {image && (
+          <View style={styles.previewCard}>
+            <Text style={styles.previewTitle}>
+              Uploaded Image Preview
+            </Text>
+
+            <Image
+              source={{ uri: image }}
+              style={styles.preview}
+            />
+
+            <Text style={styles.successText}>
+              ✓ Image Uploaded Successfully
+            </Text>
+
+            <TouchableOpacity
+              style={styles.removeBtn}
+              onPress={removeImage}
+            >
+              <Text style={styles.removeText}>
+                Remove Image
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Buttons */}
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={styles.outlineBtn}
+            onPress={onBack}
+          >
+            <Text style={styles.outlineText}>
+              Back
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.btn}
+            onPress={onNext}
+          >
+            <Text style={styles.btnText}>
+              Continue
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ScrollView>
+    </Screen>
   );
 }
 
@@ -195,9 +241,9 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
-    marginBottom: 16,
+    marginBottom: 18,
     color: Theme.colors.text,
   },
 
@@ -209,10 +255,12 @@ const styles = StyleSheet.create({
   },
 
   activeBox: {
-    backgroundColor: Theme.colors.primary,
+    backgroundColor:
+      Theme.colors.primary,
   },
 
   checkText: {
+    fontSize: 15,
     fontWeight: "600",
     color: Theme.colors.text,
   },
@@ -227,14 +275,47 @@ const styles = StyleSheet.create({
 
   uploadText: {
     textAlign: "center",
-    fontWeight: "600",
+    fontWeight: "700",
+    color: Theme.colors.text,
+  },
+
+  previewCard: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
+  },
+
+  previewTitle: {
+    fontWeight: "700",
+    marginBottom: 10,
+    color: Theme.colors.text,
   },
 
   preview: {
     width: "100%",
-    height: 190,
+    height: 220,
     borderRadius: 14,
-    marginBottom: 14,
+  },
+
+  successText: {
+    marginTop: 10,
+    textAlign: "center",
+    color: "green",
+    fontWeight: "700",
+  },
+
+  removeBtn: {
+    marginTop: 12,
+    backgroundColor: "#FEE2E2",
+    padding: 12,
+    borderRadius: 12,
+  },
+
+  removeText: {
+    textAlign: "center",
+    color: "#DC2626",
+    fontWeight: "700",
   },
 
   row: {
@@ -252,9 +333,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  outlineText: {
+    fontWeight: "600",
+    color: Theme.colors.text,
+  },
+
   btn: {
     flex: 1,
-    backgroundColor: Theme.colors.primary,
+    backgroundColor:
+      Theme.colors.primary,
     padding: 14,
     borderRadius: 14,
     alignItems: "center",

@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
 
   label: {
     fontSize: 12,
-    color: Theme.colors.textSecondary,
+    color: Theme.colors.text,
   },
 
   value: {

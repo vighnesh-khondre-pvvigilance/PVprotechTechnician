@@ -192,7 +192,7 @@ function WorkHistoryCard({
 
 const styles = StyleSheet.create({
   container: {
-   
+   padding:5,
     paddingBottom: 100,
   },
 

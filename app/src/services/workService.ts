@@ -1,64 +1,151 @@
-import { Work } from "../types/work";
+// src/services/workService.ts
+
 import { workData } from "../data/work";
 
-//
-// ✅ Helper (VERY IMPORTANT)
-// Fixes timezone issue for "YYYY-MM-DD"
-//
-const toLocalDate = (date: string) => {
-  return new Date(date + "T00:00:00");
+const currentTech = "tech001";
+
+/* -------------------- */
+/* Assigned Clients */
+/* -------------------- */
+export const getAssignedClients =
+async () => {
+  const clients =
+    workData.filter(
+      (item) =>
+        item.technicianId ===
+          currentTech &&
+        item.status ===
+          "Pending"
+    );
+
+  const unique =
+    [
+      ...new Map(
+        clients.map(
+          (item) => [
+            item.clientId ||
+              item.clientName ||
+              item.client,
+            item,
+          ]
+        )
+      ).values(),
+    ];
+
+  return unique;
 };
 
-//
-// 🔵 Pending (Work Screen)
-//
-export const getPendingWork = async (): Promise<Work[]> => {
-  return workData.filter((item) => item.status === "Pending");
+/* -------------------- */
+/* Pending Plants */
+/* -------------------- */
+export const getPendingPlants =
+async () => {
+  return workData.filter(
+    (item) =>
+      item.technicianId ===
+        currentTech &&
+      item.status ===
+        "Pending"
+  );
 };
 
-//
-// 🟢 Completed (History)
-//
-export const getCompletedWork = async (): Promise<Work[]> => {
-  return workData.filter((item) => item.status === "Completed");
+/* -------------------- */
+/* ALL Pending Tasks */
+/* NEW CONTROLLER */
+/* -------------------- */
+export const getPendingWork =
+async () => {
+  return workData.filter(
+    (item) =>
+      item.technicianId ===
+        currentTech &&
+      item.status ===
+        "Pending"
+  );
 };
 
-//
-// 🟣 Today Completed (FIXED)
-//
-export const getTodayCompletedWork = async (): Promise<Work[]> => {
-  const today = new Date();
+/* -------------------- */
+/* ALL Completed */
+/* -------------------- */
+export const getCompletedWork =
+async () => {
+  return workData.filter(
+    (item) =>
+      item.technicianId ===
+        currentTech &&
+      item.status ===
+        "Completed"
+  );
+};
 
-  return workData.filter((item) => {
-    if (!item.completedDate) return false;
+/* -------------------- */
+/* Today Completed */
+/* -------------------- */
+export const getTodayCompletedWork =
+async () => {
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
 
-    const d = toLocalDate(item.completedDate);
+  return workData.filter(
+    (item) =>
+      item.technicianId ===
+        currentTech &&
+      item.status ===
+        "Completed" &&
+      item.completedDate ===
+        today
+  );
+};
 
-    return (
+/* -------------------- */
+/* High Priority Pending */
+/* -------------------- */
+export const getHighPriorityTask =
+async () => {
+  const tasks =
+    workData.filter(
+      (item) =>
+        item.technicianId ===
+          currentTech &&
+        item.status ===
+          "Pending" &&
+        item.priority ===
+          "High"
+    );
+
+  return tasks[0] || null;
+};
+export const getPendingApprovalWork =
+async () => {
+  return workData.filter(
+    (item) =>
+      item.technicianId === currentTech &&
       item.status === "Completed" &&
-      d.getDate() === today.getDate() &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear()
-    );
-  });
+      item.adminApproval === "Pending"
+  );
 };
 
-//
-// 🟡 (OPTIONAL) Today ALL (Pending + Completed)
-//
-export const getTodayAllWork = async (): Promise<Work[]> => {
-  const today = new Date();
+/* -------------------- */
+/* Today All Work */
+/* -------------------- */
+export const getTodayAllWork =
+async () => {
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
 
-  return workData.filter((item) => {
-    const dateStr = item.completedDate || item.assignedDate;
-    if (!dateStr) return false;
-
-    const d = toLocalDate(dateStr);
-
-    return (
-      d.getDate() === today.getDate() &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear()
-    );
-  });
+  return workData.filter(
+    (item) =>
+      item.technicianId ===
+        currentTech &&
+      (
+        item.assignedDate ===
+          today ||
+        item.completedDate ===
+          today
+      )
+  );
 };

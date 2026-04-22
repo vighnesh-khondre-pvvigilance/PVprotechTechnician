@@ -6,32 +6,33 @@ const today =
     .split("T")[0];
 
 export const workData = [
-  // ✅ TODAY COMPLETED
+  // =====================================
+  // COMPLETED TASKS
+  // =====================================
+
   {
     id: "1",
-    title:
-      "Solar Panel Inspection",
-    location:
-      "Pune Site A",
-    status: "Completed",
-    adminApproval:
-      "Approved",
+    technicianId: "tech001",
+    clientId: "c1",
+    clientName: "Sharma Group",
 
-    assignedDate:
-      "2026-04-15",
-    completedDate:
-      today,
+    title: "Solar Panel Inspection",
+    plantName: "Sharma Solar Plant",
+    ownerName: "Mr. Sharma",
+
+    location: "Pune Site A",
+    capacity: "10kW",
+
+    status: "Completed",
+    adminApproval: "Approved",
+    priority: "Medium",
+    visitType: "Inspection",
+
+    assignedDate: "2026-04-15",
+    completedDate: today,
 
     issue:
       "Dust accumulation reducing efficiency",
-
-    ownerName:
-      "Mr. Sharma",
-
-    plantName:
-      "Sharma Solar Plant",
-
-    capacity: "10kW",
 
     beforeImage:
       "https://images.unsplash.com/photo-1509391366360-2e959784a276",
@@ -42,30 +43,28 @@ export const workData = [
 
   {
     id: "2",
-    title:
-      "Inverter Maintenance",
-    location:
-      "Pune Site B",
-    status: "Completed",
-    adminApproval:
-      "Not Approved",
+    technicianId: "tech001",
+    clientId: "c2",
+    clientName: "Patil Industries",
 
-    assignedDate:
-      today,
-    completedDate:
-      today,
+    title: "Inverter Maintenance",
+    plantName: "Patil Solar Plant",
+    ownerName: "Mr. Patil",
+
+    location: "Pune Site B",
+    capacity: "15kW",
+
+    status: "Completed",
+    adminApproval: "Approved",
+    priority: "High",
+    visitType: "Maintenance",
+
+    assignedDate: "2026-04-14",
+    completedDate: today,
 
     issue:
       "Inverter fault E23 resolved",
 
-    ownerName:
-      "Mr. Patil",
-
-    plantName:
-      "Patil Solar",
-
-    capacity: "15kW",
-
     beforeImage:
       "https://via.placeholder.com/300",
 
@@ -73,103 +72,30 @@ export const workData = [
       "https://via.placeholder.com/300",
   },
 
-  // 🟢 YESTERDAY
   {
     id: "3",
-    title:
-      "Wiring Inspection",
-    location:
-      "Pune Site C",
-    status: "Completed",
-    adminApproval:
-      "Approved",
+    technicianId: "tech001",
+    clientId: "c3",
+    clientName: "Joshi Agro",
 
-    assignedDate:
-      "2026-04-14",
+    title: "Battery Health Check",
+    plantName: "Joshi Farm Solar",
+    ownerName: "Mr. Joshi",
 
-    completedDate:
-      "2026-04-15",
-
-    issue:
-      "Loose wiring fixed",
-
-    ownerName:
-      "Mr. Deshmukh",
-
-    plantName:
-      "Deshmukh Solar",
-
-    capacity: "8kW",
-
-    beforeImage:
-      "https://via.placeholder.com/300",
-
-    afterImage:
-      "https://via.placeholder.com/300",
-  },
-
-  // 🔵 OLDER COMPLETED
-  {
-    id: "4",
-    title:
-      "Panel Cleaning",
-    location:
-      "Mumbai Site A",
-    status: "Completed",
-    adminApproval:
-      "Not Approved",
-
-    assignedDate:
-      "2026-04-12",
-
-    completedDate:
-      "2026-04-13",
-
-    issue:
-      "Heavy dust cleaned",
-
-    ownerName:
-      "Mr. Khan",
-
-    plantName:
-      "Khan Solar",
-
-    capacity: "20kW",
-
-    beforeImage:
-      "https://via.placeholder.com/300",
-
-    afterImage:
-      "https://via.placeholder.com/300",
-  },
-
-  {
-    id: "5",
-    title:
-      "Battery Check",
-    location:
-      "Nashik Site B",
-    status: "Completed",
-    adminApproval:
-      "Approved",
-
-    assignedDate:
-      "2026-04-10",
-
-    completedDate:
-      "2026-04-11",
-
-    issue:
-      "Battery voltage drop fixed",
-
-    ownerName:
-      "Mr. Joshi",
-
-    plantName:
-      "Joshi Solar",
-
+    location: "Nashik Site",
     capacity: "12kW",
 
+    status: "Completed",
+    adminApproval: "Approved",
+    priority: "Low",
+    visitType: "Battery Service",
+
+    assignedDate: "2026-04-10",
+    completedDate: "2026-04-11",
+
+    issue:
+      "Battery voltage imbalance fixed",
+
     beforeImage:
       "https://via.placeholder.com/300",
 
@@ -177,58 +103,117 @@ export const workData = [
       "https://via.placeholder.com/300",
   },
 
-  // 🔶 PENDING TASKS
-  {
-    id: "6",
-    title:
-      "Inverter Installation",
-    location:
-      "Pune Site D",
-    status: "Pending",
-    adminApproval:
-      "Pending",
+  // =====================================
+  // PENDING TASKS - TECH001
+  // =====================================
 
-    assignedDate:
-      today,
+  {
+    id: "4",
+    technicianId: "tech001",
+    clientId: "c4",
+    clientName: "More Enterprises",
+
+    title: "Inverter Installation",
+    plantName: "More Solar Plant",
+    ownerName: "Mr. More",
+
+    location: "Pune Site D",
+    capacity: "18kW",
+
+    status: "Pending",
+    adminApproval: "Pending",
+    priority: "High",
+    visitType: "Installation",
+
+    assignedDate: today,
 
     issue:
       "New inverter setup required",
-
-    ownerName:
-      "Mr. More",
-
-    plantName:
-      "More Solar",
-
-    capacity: "18kW",
 
     beforeImage: "",
     afterImage: "",
   },
 
   {
-    id: "7",
-    title:
-      "Cable Fault Check",
-    location:
-      "Satara Site",
-    status: "Pending",
-    adminApproval:
-      "Pending",
+    id: "5",
+    technicianId: "tech001",
+    clientId: "c5",
+    clientName: "Jadhav Infra",
 
-    assignedDate:
-      "2026-04-16",
+    title: "Cable Fault Check",
+    plantName: "Jadhav Solar",
+    ownerName: "Mr. Jadhav",
+
+    location: "Satara Site",
+    capacity: "9kW",
+
+    status: "Pending",
+    adminApproval: "Pending",
+    priority: "High",
+    visitType: "Repair",
+
+    assignedDate: today,
 
     issue:
-      "Cable heating issue",
+      "Cable overheating issue",
 
-    ownerName:
-      "Mr. Jadhav",
+    beforeImage: "",
+    afterImage: "",
+  },
 
-    plantName:
-      "Jadhav Solar",
+  {
+    id: "6",
+    technicianId: "tech001",
+    clientId: "c6",
+    clientName: "Pawar Industries",
 
-    capacity: "9kW",
+    title: "System Audit",
+    plantName: "Pawar Solar",
+    ownerName: "Mr. Pawar",
+
+    location: "Kolhapur Site",
+    capacity: "25kW",
+
+    status: "Pending",
+    adminApproval: "Pending",
+    priority: "Medium",
+    visitType: "Audit",
+
+    assignedDate: today,
+
+    issue:
+      "Low generation issue",
+
+    beforeImage: "",
+    afterImage: "",
+  },
+
+  // =====================================
+  // TATA SOLAR (MULTIPLE PLANTS)
+  // =====================================
+
+  {
+    id: "7",
+    technicianId: "tech001",
+    clientId: "c7",
+    clientName: "Tata Solar",
+
+    title: "Routine Cleaning",
+    plantName: "Tata Plant Pune",
+    ownerName: "Site Manager",
+
+    location: "Chakan Pune",
+    capacity: "250kW",
+
+    status: "Pending",
+    adminApproval: "Pending",
+    priority: "Low",
+    visitType: "Cleaning",
+
+    assignedDate: today,
+
+    issue:
+      "Monthly scheduled cleaning",
 
     beforeImage: "",
     afterImage: "",
@@ -236,27 +221,112 @@ export const workData = [
 
   {
     id: "8",
-    title:
-      "System Performance Audit",
-    location:
-      "Kolhapur Site",
-    status: "Pending",
-    adminApproval:
-      "Pending",
+    technicianId: "tech001",
+    clientId: "c7",
+    clientName: "Tata Solar",
 
-    assignedDate:
-      "2026-04-17",
+    title: "Monthly Inspection",
+    plantName: "Tata Chakan Plant",
+    ownerName: "Operations Head",
+
+    location: "Chakan MIDC",
+    capacity: "500kW",
+
+    status: "Completed",
+    adminApproval: "Pending",
+    priority: "High",
+    visitType: "Inspection",
+
+    assignedDate: today,
 
     issue:
-      "Low generation issue",
+      "Routine monthly inspection",
 
-    ownerName:
-      "Mr. Pawar",
+    beforeImage: "",
+    afterImage: "",
+  },
 
-    plantName:
-      "Pawar Solar",
+  {
+    id: "9",
+    technicianId: "tech001",
+    clientId: "c7",
+    clientName: "Tata Solar",
 
-    capacity: "25kW",
+    title: "Panel Cleaning",
+    plantName: "Tata Warehouse Plant",
+    ownerName: "Warehouse Admin",
+
+    location: "Bhosari Pune",
+    capacity: "150kW",
+
+    status: "Completed",
+    adminApproval: "Pending",
+    priority: "Medium",
+    visitType: "Cleaning",
+
+    assignedDate: today,
+
+    issue:
+      "Dust accumulation",
+
+    beforeImage: "",
+    afterImage: "",
+  },
+
+  {
+    id: "10",
+    technicianId: "tech001",
+    clientId: "c7",
+    clientName: "Tata Solar",
+
+    title: "Inverter Check",
+    plantName: "Tata MIDC Plant",
+    ownerName: "Electrical Head",
+
+    location: "Pimpri MIDC",
+    capacity: "300kW",
+
+    status: "Completed",
+    adminApproval: "Pending",
+    priority: "Low",
+    visitType: "Maintenance",
+
+    assignedDate: today,
+
+    issue:
+      "Periodic inverter service",
+
+    beforeImage: "",
+    afterImage: "",
+  },
+
+  // =====================================
+  // RELIANCE (TECH002)
+  // =====================================
+
+  {
+    id: "11",
+    technicianId: "tech002",
+    clientId: "c8",
+    clientName: "Reliance Energy",
+
+    title: "String Fault Inspection",
+    plantName: "Reliance Rooftop",
+
+    ownerName: "Plant Head",
+
+    location: "Mumbai Warehouse",
+    capacity: "100kW",
+
+    status: "Completed",
+    adminApproval: "Pending",
+    priority: "High",
+    visitType: "Inspection",
+
+    assignedDate: today,
+
+    issue:
+      "String 2 not generating",
 
     beforeImage: "",
     afterImage: "",

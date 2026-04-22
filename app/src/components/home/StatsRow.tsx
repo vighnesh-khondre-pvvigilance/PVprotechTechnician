@@ -1,157 +1,255 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-} from 'react-native';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Theme } from "../../theme/theme";
 
 import {
-  getPendingWork,
+  getAssignedClients,
+  getPendingPlants,
   getTodayCompletedWork,
-  getTodayAllWork,
-} from '../../services/workService';
-
-import { Theme } from '../../theme/theme';
+  getHighPriorityTask,
+} from "../../services/workService";
 
 export default function StatsRow() {
-  const [pending, setPending] = useState(0);
-  const [done, setDone] = useState(0);
-  const [visits, setVisits] = useState(0);
-  const [priorityTask, setPriorityTask] = useState<any>(null);
+  const [clients, setClients] =
+    useState(0);
+
+  const [plants, setPlants] =
+    useState(0);
+
+  const [done, setDone] =
+    useState(0);
+
+  const [priorityTask, setPriorityTask] =
+    useState<any>(null);
+
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
-    loadStats();
+    loadData();
   }, []);
 
-  const loadStats = async () => {
-    const pendingData = await getPendingWork();
-    const doneData = await getTodayCompletedWork();
-    const visitsData = await getTodayAllWork();
+  const loadData = async () => {
+    try {
+      setLoading(true);
 
-    setPending(pendingData.length);
-    setDone(doneData.length);
-    setVisits(visitsData.length);
+      const [
+        clientsData,
+        plantsData,
+        doneData,
+        highTask,
+      ] = await Promise.all([
+        getAssignedClients(),
+        getPendingPlants(),
+        getTodayCompletedWork(),
+        getHighPriorityTask(),
+      ]);
 
-    // First pending task = High Priority
-    if (pendingData.length > 0) {
-      setPriorityTask(pendingData[0]);
+      setClients(
+        clientsData?.length || 0
+      );
+
+      setPlants(
+        plantsData?.length || 0
+      );
+
+      setDone(
+        doneData?.length || 0
+      );
+
+      setPriorityTask(
+        highTask || null
+      );
+    } catch (error) {
+      console.log(
+        "Stats Error:",
+        error
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   const stats = [
     {
-      label: 'Pending',
-      value: pending,
-      onPress: () => router.push('/(tabs)/work'),
+      label: "Clients",
+      value: clients,
+      icon: "business-outline",
+      onPress: () =>
+        router.push("/(tabs)/work"),
     },
+
     {
-      label: 'Done',
+      label: "Plants",
+      value: plants,
+      icon: "leaf-outline",
+      onPress: () =>
+        router.push("/(tabs)/work"),
+    },
+
+    {
+      label: "Done",
       value: done,
-      onPress: () => router.push('/(tabs)/history'),
-    },
-    {
-      label: 'Visits',
-      value: visits,
-      onPress: () => {},
+      icon: "checkmark-done-outline",
+      onPress: () =>
+        router.push("/(tabs)/history"),
     },
   ];
 
   return (
     <>
-      {/* Stats Row */}
+      {/* Cards */}
       <View style={styles.row}>
         {stats.map((item) => (
           <TouchableOpacity
             key={item.label}
             style={styles.card}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             onPress={item.onPress}
           >
-            <Text style={styles.value}>{item.value}</Text>
-            <Text style={styles.label}>{item.label}</Text>
+            <Ionicons
+              name={item.icon as any}
+              size={18}
+              color={
+                Theme.colors.primary
+              }
+            />
+
+            <Text style={styles.value}>
+              {loading
+                ? "..."
+                : item.value}
+            </Text>
+
+            <Text style={styles.label}>
+              {item.label}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Priority Alert */}
-      {priorityTask && (
-        <TouchableOpacity
-          style={styles.alertCard}
-          activeOpacity={0.9}
-          onPress={() => router.push('/(tabs)/work')}
-        >
-          <Ionicons name="warning" size={22} color="#fff" />
+      {/* High Priority Alert */}
+      {!loading &&
+        priorityTask && (
+          <TouchableOpacity
+            style={styles.alert}
+            activeOpacity={0.9}
+            onPress={() =>
+              router.push(
+                "/(tabs)/work"
+              )
+            }
+          >
+            <Ionicons
+              name="warning"
+              size={20}
+              color="#fff"
+            />
 
-          <View style={{ marginLeft: 10, flex: 1 }}>
-            <Text style={styles.alertTitle}>High Priority Work</Text>
-            <Text style={styles.alertText}>
-              {priorityTask.title} - {priorityTask.plantName}
-            </Text>
-          </View>
+            <View
+              style={{
+                marginLeft: 10,
+                flex: 1,
+              }}
+            >
+              <Text
+                style={
+                  styles.alertTitle
+                }
+              >
+                High Priority Visit
+              </Text>
 
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#fff"
-          />
-        </TouchableOpacity>
-      )}
+              <Text
+                style={
+                  styles.alertText
+                }
+                numberOfLines={1}
+              >
+                {
+                  priorityTask.clientName
+                }
+                {" • "}
+                {
+                  priorityTask.plantName
+                }
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color="#fff"
+            />
+          </TouchableOpacity>
+        )}
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 16,
-  },
+const styles =
+  StyleSheet.create({
+    row: {
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 16,
+    },
 
-  card: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    borderRadius: 18,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
+    card: {
+      flex: 1,
+      backgroundColor:
+        "#fff",
+      paddingVertical: 16,
+      borderRadius: 18,
+      alignItems: "center",
 
-  value: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Theme.colors.primary,
-  },
+      shadowColor: "#000",
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+    },
 
-  label: {
-    color: '#64748B',
-    marginTop: 5,
-    fontSize: 13,
-  },
+    value: {
+      fontSize: 24,
+      fontWeight: "700",
+      color:
+        Theme.colors.primary,
+      marginTop: 4,
+    },
 
-  alertCard: {
-    marginTop: 16,
-    backgroundColor: '#EF4444',
-    borderRadius: 18,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+    label: {
+      marginTop: 4,
+      fontSize: 13,
+      color: "#64748B",
+    },
 
-  alertTitle: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '700',
-  },
+    alert: {
+      marginTop: 16,
+      backgroundColor:
+        "#EF4444",
+      borderRadius: 18,
+      padding: 16,
+      flexDirection: "row",
+      alignItems: "center",
+    },
 
-  alertText: {
-    color: '#FEE2E2',
-    marginTop: 2,
-    fontSize: 13,
-  },
-});
+    alertTitle: {
+      color: "#fff",
+      fontWeight: "700",
+      fontSize: 14,
+    },
+
+    alertText: {
+      color: "#FEE2E2",
+      marginTop: 2,
+      fontSize: 13,
+    },
+  });

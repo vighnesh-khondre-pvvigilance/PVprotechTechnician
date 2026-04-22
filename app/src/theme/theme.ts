@@ -1,14 +1,21 @@
 export const Theme = {
   colors: {
-    primary: "#FFB800",
-    secondary: "#1E293B",
+    primary: "#F59E0B",     // Slightly richer solar amber
+    secondary: "#0F172A",   // Stronger professional navy
     background: "#F8FAFC",
     card: "#FFFFFF",
-    text: "#0F172A",
-    subtext: "#64748B",
-    border: "#E2E8F0",
-    success: "#22C55E",
-    danger: "#EF4444",
+
+    text: "#111827",
+    subtext: "#6B7280",
+
+    border: "#E5E7EB",
+
+    success: "#16A34A",
+    warning: "#F59E0B",
+    danger: "#DC2626",
+    info: "#2563EB",
+
+    offline: "#94A3B8",
   },
 
   spacing: {
@@ -22,7 +29,7 @@ export const Theme = {
   radius: {
     sm: 8,
     md: 12,
-    lg: 20,
-    xl: 28,
+    lg: 18,
+    xl: 24,
   },
 };
