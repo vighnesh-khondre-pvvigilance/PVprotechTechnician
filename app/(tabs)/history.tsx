@@ -26,7 +26,6 @@ import { Work } from "../src/types/work";
 
 import {
   getCompletedWork,
-  getTodayCompletedWork,
 } from "../src/services/workService";
 
 type FilterType =
@@ -193,14 +192,14 @@ export default function History() {
       item.adminApproval ||
       "Pending";
 
-    const isApproved =
+    const approved =
       approval ===
       "Approved";
 
     return (
       <TouchableOpacity
         activeOpacity={
-          0.85
+          0.88
         }
         style={
           styles.card
@@ -221,14 +220,29 @@ export default function History() {
             styles.cardTop
           }
         >
-          <Text
-            style={
-              styles.titleText
-            }
-            numberOfLines={1}
+          <View
+            style={{
+              flex: 1,
+            }}
           >
-            {item.title}
-          </Text>
+            <Text
+              style={
+                styles.title
+              }
+              numberOfLines={1}
+            >
+              {item.title}
+            </Text>
+
+            <Text
+              style={
+                styles.client
+              }
+              numberOfLines={1}
+            >
+              {item.clientName}
+            </Text>
+          </View>
 
           <View
             style={
@@ -240,71 +254,60 @@ export default function History() {
                 styles.doneText
               }
             >
-              Done
+              DONE
             </Text>
           </View>
         </View>
 
-        {/* Client */}
+        {/* Middle */}
         <View
-          style={styles.row}
+          style={
+            styles.metaWrap
+          }
         >
-          <Ionicons
-            name="business-outline"
-            size={14}
-            color="#64748B"
-          />
-
-          <Text
+          <View
             style={
-              styles.subText
+              styles.metaItem
             }
           >
-            {item.clientName ||
-              item.client}
-          </Text>
-        </View>
+            <Ionicons
+              name="leaf-outline"
+              size={14}
+              color="#64748B"
+            />
 
-        {/* Plant */}
-        <View
-          style={styles.row}
-        >
-          <Ionicons
-            name="leaf-outline"
-            size={14}
-            color="#64748B"
-          />
+            <Text
+              style={
+                styles.metaText
+              }
+            >
+              {
+                item.plantName
+              }
+            </Text>
+          </View>
 
-          <Text
+          <View
             style={
-              styles.subText
+              styles.metaItem
             }
           >
-            {
-              item.plantName
-            }
-          </Text>
-        </View>
+            <Ionicons
+              name="calendar-outline"
+              size={14}
+              color="#64748B"
+            />
 
-        {/* Date */}
-        <View
-          style={styles.row}
-        >
-          <Ionicons
-            name="calendar-outline"
-            size={14}
-            color="#64748B"
-          />
-
-          <Text
-            style={
-              styles.subText
-            }
-          >
-            {formatDate(
-              item.completedDate
-            )}
-          </Text>
+            <Text
+              style={
+                styles.metaText
+              }
+            >
+              {formatDate(
+                item.completedDate
+              )}
+            </Text>
+          </View>
         </View>
 
         {/* Footer */}
@@ -316,20 +319,20 @@ export default function History() {
           <View
             style={[
               styles.status,
-              isApproved
+              approved
                 ? styles.approved
                 : styles.pending,
             ]}
           >
             <Ionicons
               name={
-                isApproved
+                approved
                   ? "checkmark-circle"
                   : "time"
               }
               size={14}
               color={
-                isApproved
+                approved
                   ? "#16A34A"
                   : "#F59E0B"
               }
@@ -340,7 +343,7 @@ export default function History() {
                 styles.statusText,
                 {
                   color:
-                    isApproved
+                    approved
                       ? "#16A34A"
                       : "#F59E0B",
                 },
@@ -362,153 +365,6 @@ export default function History() {
 
   return (
     <Screen>
-      {/* Header */}
-      <Text
-        style={
-          styles.header
-        }
-      >
-        Work History
-      </Text>
-
-      {/* Stats */}
-      <View
-        style={
-          styles.statsRow
-        }
-      >
-        <View
-          style={
-            styles.statCard
-          }
-        >
-          <Text
-            style={
-              styles.statValue
-            }
-          >
-            {stats.total}
-          </Text>
-          <Text
-            style={
-              styles.statLabel
-            }
-          >
-            Total
-          </Text>
-        </View>
-
-        <View
-          style={
-            styles.statCard
-          }
-        >
-          <Text
-            style={
-              styles.statValue
-            }
-          >
-            {stats.today}
-          </Text>
-          <Text
-            style={
-              styles.statLabel
-            }
-          >
-            Today
-          </Text>
-        </View>
-
-        <View
-          style={
-            styles.statCard
-          }
-        >
-          <Text
-            style={
-              styles.statValue
-            }
-          >
-            {
-              stats.approved
-            }
-          </Text>
-          <Text
-            style={
-              styles.statLabel
-            }
-          >
-            Approved
-          </Text>
-        </View>
-      </View>
-
-      {/* Search */}
-      <View
-        style={
-          styles.searchBox
-        }
-      >
-        <Ionicons
-          name="search"
-          size={18}
-          color="#94A3B8"
-        />
-
-        <TextInput
-          style={
-            styles.input
-          }
-          placeholder="Search history..."
-          placeholderTextColor="#94A3B8"
-          value={search}
-          onChangeText={
-            setSearch
-          }
-        />
-      </View>
-
-      {/* Filters */}
-      <View
-        style={
-          styles.filterRow
-        }
-      >
-        {[
-          "all",
-          "today",
-          "approved",
-          "pending",
-        ].map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.tab,
-              filter ===
-                item &&
-                styles.activeTab,
-            ]}
-            onPress={() =>
-              setFilter(
-                item as FilterType
-              )
-            }
-          >
-            <Text
-              style={[
-                styles.tabText,
-                filter ===
-                  item &&
-                  styles.activeText,
-              ]}
-            >
-              {item}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* List */}
       <FlatList
         data={
           filteredData
@@ -532,6 +388,147 @@ export default function History() {
             }
           />
         }
+        ListHeaderComponent={
+          <View
+            style={
+              styles.container
+            }
+          >
+            {/* Header */}
+            <View
+              style={
+                styles.headerRow
+              }
+            >
+              <View>
+                <Text
+                  style={
+                    styles.smallHead
+                  }
+                >
+                  Reports
+                </Text>
+
+                <Text
+                  style={
+                    styles.header
+                  }
+                >
+                  Work History
+                </Text>
+              </View>
+
+              <View
+                style={
+                  styles.iconBtn
+                }
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={18}
+                  color="#fff"
+                />
+              </View>
+            </View>
+
+            {/* Stats */}
+            <View
+              style={
+                styles.statsRow
+              }
+            >
+              <StatCard
+                value={
+                  stats.total
+                }
+                label="Total"
+              />
+
+              <StatCard
+                value={
+                  stats.today
+                }
+                label="Today"
+              />
+
+              <StatCard
+                value={
+                  stats.approved
+                }
+                label="Approved"
+              />
+            </View>
+
+            {/* Search */}
+            <View
+              style={
+                styles.searchBox
+              }
+            >
+              <Ionicons
+                name="search"
+                size={18}
+                color="#94A3B8"
+              />
+
+              <TextInput
+                style={
+                  styles.input
+                }
+                placeholder="Search history..."
+                placeholderTextColor="#94A3B8"
+                value={search}
+                onChangeText={
+                  setSearch
+                }
+              />
+            </View>
+
+            {/* Filters */}
+            <View
+              style={
+                styles.filterRow
+              }
+            >
+              {[
+                "all",
+                "today",
+                "approved",
+                "pending",
+              ].map(
+                (item) => (
+                  <TouchableOpacity
+                    key={
+                      item
+                    }
+                    style={[
+                      styles.tab,
+                      filter ===
+                        item &&
+                        styles.activeTab,
+                    ]}
+                    onPress={() =>
+                      setFilter(
+                        item as FilterType
+                      )
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.tabText,
+                        filter ===
+                          item &&
+                          styles.activeText,
+                      ]}
+                    >
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              )}
+            </View>
+          </View>
+        }
         ListEmptyComponent={
           !loading ? (
             <View
@@ -547,52 +544,130 @@ export default function History() {
 
               <Text
                 style={
+                  styles.emptyTitle
+                }
+              >
+                No History Found
+              </Text>
+
+              <Text
+                style={
                   styles.emptyText
                 }
               >
-                No history found
+                Completed jobs will
+                appear here
               </Text>
             </View>
           ) : null
         }
         contentContainerStyle={{
           paddingBottom: 30,
+          paddingHorizontal: 6,
         }}
       />
     </Screen>
   );
 }
 
+function StatCard({
+  value,
+  label,
+}: {
+  value: number;
+  label: string;
+}) {
+  return (
+    <View
+      style={
+        styles.statCard
+      }
+    >
+      <Text
+        style={
+          styles.statValue
+        }
+      >
+        {value}
+      </Text>
+
+      <Text
+        style={
+          styles.statLabel
+        }
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
+
 const styles =
   StyleSheet.create({
+    container: {
+      paddingTop: 4,
+    },
+
+    headerRow: {
+      flexDirection:
+        "row",
+      justifyContent:
+        "space-between",
+      alignItems:
+        "center",
+      marginBottom: 18,
+    },
+
+    smallHead: {
+      fontSize: 13,
+      color:
+        Theme.colors.subtext,
+      fontWeight: "600",
+    },
+
     header: {
-      fontSize: 24,
+      fontSize: 28,
       fontWeight:
-        "700",
-      marginBottom: 16,
+        "800",
+      color:
+        Theme.colors.text,
+      marginTop: 2,
+    },
+
+    iconBtn: {
+      width: 46,
+      height: 46,
+      borderRadius: 16,
+      backgroundColor:
+        Theme.colors.primary,
+      justifyContent:
+        "center",
+      alignItems:
+        "center",
     },
 
     statsRow: {
       flexDirection:
         "row",
       gap: 10,
-      marginBottom: 14,
+      marginBottom: 16,
     },
 
     statCard: {
       flex: 1,
       backgroundColor:
         "#fff",
-      borderRadius: 18,
+      borderRadius: 20,
       padding: 14,
       alignItems:
         "center",
+      elevation: 2,
     },
 
     statValue: {
-      fontSize: 22,
+      fontSize: 24,
       fontWeight:
-        "700",
+        "800",
       color:
         Theme.colors.primary,
     },
@@ -610,30 +685,31 @@ const styles =
         "center",
       backgroundColor:
         "#fff",
-      borderRadius: 16,
+      borderRadius: 18,
       paddingHorizontal: 14,
       marginBottom: 14,
+      height: 52,
     },
 
     input: {
       flex: 1,
-      height: 48,
       marginLeft: 8,
+      color: "#111827",
     },
 
     filterRow: {
       flexDirection:
         "row",
-      gap: 8,
       flexWrap:
         "wrap",
-      marginBottom: 14,
+      gap: 8,
+      marginBottom: 16,
     },
 
     tab: {
       paddingHorizontal: 14,
       paddingVertical: 8,
-      borderRadius: 30,
+      borderRadius: 20,
       backgroundColor:
         "#fff",
     },
@@ -646,10 +722,10 @@ const styles =
     tabText: {
       color: "#475569",
       fontWeight:
-        "600",
+        "700",
+      fontSize: 12,
       textTransform:
         "capitalize",
-      fontSize: 12,
     },
 
     activeText: {
@@ -659,9 +735,10 @@ const styles =
     card: {
       backgroundColor:
         "#fff",
+      borderRadius: 22,
       padding: 16,
-      borderRadius: 18,
       marginBottom: 12,
+      elevation: 2,
     },
 
     cardTop: {
@@ -669,42 +746,53 @@ const styles =
         "row",
       justifyContent:
         "space-between",
-      marginBottom: 8,
+      alignItems:
+        "flex-start",
+      marginBottom: 10,
     },
 
-    titleText: {
-      flex: 1,
+    title: {
       fontSize: 15,
       fontWeight:
-        "700",
-      marginRight: 8,
+        "800",
+      color:
+        Theme.colors.text,
+    },
+
+    client: {
+      fontSize: 13,
+      color: "#64748B",
+      marginTop: 4,
     },
 
     doneBadge: {
       backgroundColor:
         "#DCFCE7",
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 10,
     },
 
     doneText: {
-      fontSize: 11,
+      fontSize: 10,
       fontWeight:
-        "700",
+        "800",
       color: "#16A34A",
     },
 
-    row: {
-      flexDirection:
-        "row",
-      gap: 6,
-      marginTop: 6,
-      alignItems:
-        "center",
+    metaWrap: {
+      gap: 8,
     },
 
-    subText: {
+    metaItem: {
+      flexDirection:
+        "row",
+      alignItems:
+        "center",
+      gap: 6,
+    },
+
+    metaText: {
       fontSize: 12,
       color: "#64748B",
     },
@@ -722,9 +810,9 @@ const styles =
     status: {
       flexDirection:
         "row",
-      gap: 6,
       alignItems:
         "center",
+      gap: 6,
       paddingHorizontal: 10,
       paddingVertical: 6,
       borderRadius: 20,
@@ -752,8 +840,17 @@ const styles =
       marginTop: 80,
     },
 
+    emptyTitle: {
+      marginTop: 12,
+      fontSize: 18,
+      fontWeight:
+        "700",
+      color:
+        Theme.colors.text,
+    },
+
     emptyText: {
-      marginTop: 10,
+      marginTop: 4,
       color: "#64748B",
     },
   });
