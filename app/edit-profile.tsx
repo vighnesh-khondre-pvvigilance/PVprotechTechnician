@@ -8,6 +8,8 @@ import {
   ScrollView,
 } from "react-native";
 import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+
 import Screen from "./src/components/Screen";
 import { Theme } from "./src/theme/theme";
 import { useAuth } from "./src/context/AuthContext";
@@ -26,10 +28,14 @@ export default function EditProfile() {
     phone: "",
   });
 
-  // 🔍 Validation
   const validate = () => {
     let valid = true;
-    let newErrors = { name: "", email: "", phone: "" };
+
+    const newErrors = {
+      name: "",
+      email: "",
+      phone: "",
+    };
 
     if (!name.trim()) {
       newErrors.name = "Name is required";
@@ -50,7 +56,6 @@ export default function EditProfile() {
     return valid;
   };
 
-  // 💾 Save
   const handleSave = async () => {
     if (!validate()) return;
 
@@ -66,37 +71,86 @@ export default function EditProfile() {
 
   return (
     <Screen>
-      <ScrollView>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.container}>
-          <Text style={styles.title}>Edit Profile</Text>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => router.back()}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={20}
+                color={Theme.colors.text}
+              />
+            </TouchableOpacity>
 
-          {/* NAME */}
-          <InputField
-            label="Name"
-            value={name}
-            onChangeText={setName}
-            error={errors.name}
-          />
+            <Text style={styles.title}>Edit Profile</Text>
 
-          {/* EMAIL */}
-          <InputField
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            error={errors.email}
-          />
+            <View style={{ width: 40 }} />
+          </View>
 
-          {/* PHONE */}
-          <InputField
-            label="Phone"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            error={errors.phone}
-          />
+          {/* Hero */}
+          <View style={styles.heroCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </Text>
+            </View>
 
-          {/* SAVE */}
-          <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+            <Text style={styles.heroName}>{name || "Technician"}</Text>
+            <Text style={styles.heroSub}>Update your account details</Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.formCard}>
+            <InputField
+              label="Full Name"
+              icon="person-outline"
+              value={name}
+              onChangeText={setName}
+              error={errors.name}
+            />
+
+            <InputField
+              label="Email Address"
+              icon="mail-outline"
+              value={email}
+              onChangeText={setEmail}
+              error={errors.email}
+              keyboardType="email-address"
+            />
+
+            <InputField
+              label="Phone Number"
+              icon="call-outline"
+              value={phone}
+              onChangeText={setPhone}
+              error={errors.phone}
+              keyboardType="phone-pad"
+            />
+          </View>
+
+          {/* Save */}
+          <TouchableOpacity
+            style={styles.saveBtn}
+            activeOpacity={0.85}
+            onPress={handleSave}
+          >
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={18}
+              color="#fff"
+            />
             <Text style={styles.saveText}>Save Changes</Text>
           </TouchableOpacity>
         </View>
@@ -105,72 +159,173 @@ export default function EditProfile() {
   );
 }
 
-/* 🔹 Input Component */
+/* Input Component */
 const InputField = ({
   label,
+  icon,
   value,
   onChangeText,
   error,
   keyboardType = "default",
 }: any) => (
-  <View style={styles.inputContainer}>
+  <View style={styles.inputWrap}>
     <Text style={styles.label}>{label}</Text>
 
-    <TextInput
-      value={value}
-      onChangeText={onChangeText}
-      style={[styles.input, error && { borderColor: "red" }]}
-      keyboardType={keyboardType}
-    />
+    <View
+      style={[
+        styles.inputBox,
+        error ? styles.inputError : null,
+      ]}
+    >
+      <Ionicons
+        name={icon}
+        size={18}
+        color="#94A3B8"
+      />
 
-    {error ? <Text style={styles.error}>{error}</Text> : null}
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        style={styles.input}
+        keyboardType={keyboardType}
+        placeholder={label}
+        placeholderTextColor="#94A3B8"
+      />
+    </View>
+
+    {error ? (
+      <Text style={styles.error}>{error}</Text>
+    ) : null}
   </View>
 );
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    paddingBottom: 40,
+  },
+
   container: {
-    padding: Theme.spacing.lg,
+    padding: 6,
+    paddingTop: 8,
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 18,
+  },
+
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   title: {
     fontSize: 20,
-    fontWeight: "700",
-    marginBottom: Theme.spacing.lg,
+    fontWeight: "800",
+    color: Theme.colors.text,
   },
 
-  inputContainer: {
-    marginBottom: Theme.spacing.md,
+  heroCard: {
+    backgroundColor: Theme.colors.primary,
+    borderRadius: 28,
+    padding: 22,
+    alignItems: "center",
+    marginBottom: 18,
+  },
+
+  avatar: {
+    width: 74,
+    height: 74,
+    borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  avatarText: {
+    color: "#fff",
+    fontSize: 26,
+    fontWeight: "800",
+  },
+
+  heroName: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+
+  heroSub: {
+    color: "rgba(255,255,255,0.75)",
+    marginTop: 4,
+    fontSize: 13,
+  },
+
+  formCard: {
+    backgroundColor: "#fff",
+    borderRadius: 24,
+    padding: 16,
+    marginBottom: 18,
+  },
+
+  inputWrap: {
+    marginBottom: 16,
   },
 
   label: {
-    fontSize: 12,
-    marginBottom: 4,
-    color: Theme.colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "600",
+    color: Theme.colors.text,
+    marginBottom: 8,
+  },
+
+  inputBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    height: 54,
+  },
+
+  inputError: {
+    borderColor: "#EF4444",
   },
 
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: Theme.radius.md,
-    padding: Theme.spacing.md,
+    flex: 1,
+    marginLeft: 10,
+    color: Theme.colors.text,
   },
 
   error: {
-    color: "red",
+    color: "#EF4444",
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 6,
+    marginLeft: 4,
   },
 
   saveBtn: {
+    height: 56,
+    borderRadius: 18,
     backgroundColor: Theme.colors.primary,
-    padding: Theme.spacing.md,
-    borderRadius: Theme.radius.md,
-    marginTop: Theme.spacing.lg,
+    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
+    gap: 8,
   },
 
   saveText: {
     color: "#fff",
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });
