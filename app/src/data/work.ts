@@ -232,7 +232,7 @@ export const workData = [
     location: "Chakan MIDC",
     capacity: "500kW",
 
-    status: "Completed",
+    status: "Pending",
     adminApproval: "Pending",
     priority: "High",
     visitType: "Inspection",
@@ -259,7 +259,7 @@ export const workData = [
     location: "Bhosari Pune",
     capacity: "150kW",
 
-    status: "Completed",
+    status: "Pending",
     adminApproval: "Pending",
     priority: "Medium",
     visitType: "Cleaning",

@@ -95,15 +95,15 @@ export default function HomeScreen() {
           <QuickSolveGrid onPress={openTool} />
 
           {/* Today's Work */}
-          <View style={styles.rowBetween}>
+          {/* <View style={styles.rowBetween}>
             <Text style={styles.sectionTitle}>Today's Schedule</Text>
 
             <TouchableOpacity>
               <Text style={styles.linkText}>View All</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
-          {todaySchedule.map((item) => (
+          {/* {todaySchedule.map((item) => (
             <TouchableOpacity key={item.id} style={styles.scheduleCard}>
               <View style={styles.leftRow}>
                 <View style={styles.iconBox}>
@@ -126,10 +126,10 @@ export default function HomeScreen() {
                 color={Theme.colors.subtext}
               />
             </TouchableOpacity>
-          ))}
+          ))} */}
 
           {/* Weather */}
-          <Text style={styles.sectionTitle}>Site Weather</Text>
+          
           <WeatherCard />
 
           {/* Recent Work */}
