@@ -15,10 +15,10 @@
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/pvprotech.png"
-        
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.vighneshkhondre.PVprotechTechnician"
     },
     "web": {
       "output": "static",
@@ -42,6 +42,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ac76981b-3206-4dd2-bbd0-9cb64f6c4a28"
+      }
     }
   }
 }
