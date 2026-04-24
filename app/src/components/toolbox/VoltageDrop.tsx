@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Theme } from "../../theme/theme";
+import Screen from "../Screen";
+
 
 export default function VoltageDrop() {
   const [length, setLength] = useState("");
@@ -38,6 +40,7 @@ export default function VoltageDrop() {
   };
 
   return (
+    <Screen>
     <View style={styles.container}>
       <Text style={styles.title}>Voltage Drop</Text>
       <Text style={styles.formula}>
@@ -84,6 +87,7 @@ export default function VoltageDrop() {
         </View>
       )}
     </View>
+    </Screen>
   );
 }
 

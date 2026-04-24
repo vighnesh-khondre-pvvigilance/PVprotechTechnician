@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Theme } from "../../theme/theme";
+import Screen from "../Screen";
+
 
 export default function YieldCalc() {
   const [pdc, setPdc] = useState("");
@@ -48,6 +50,7 @@ export default function YieldCalc() {
   };
 
   return (
+    <Screen>
     <View style={styles.container}>
       <Text style={styles.title}>Daily Yield Estimate</Text>
       <Text style={styles.formula}>
@@ -94,6 +97,7 @@ export default function YieldCalc() {
         </View>
       )}
     </View>
+    </Screen>
   );
 }
 

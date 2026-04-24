@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Theme } from "../../theme/theme";
+import Screen from "../Screen";
 
 export default function CleaningCalc() {
   const [beforePower, setBeforePower] = useState("");
@@ -37,6 +38,7 @@ export default function CleaningCalc() {
   };
 
   return (
+    <Screen>
     <View style={styles.container}>
       <Text style={styles.title}>Cleaning Impact</Text>
       <Text style={styles.formula}>
@@ -75,6 +77,7 @@ export default function CleaningCalc() {
         </View>
       )}
     </View>
+    </Screen>
   );
 }
 

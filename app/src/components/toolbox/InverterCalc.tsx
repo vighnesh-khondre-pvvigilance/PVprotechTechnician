@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Theme } from "../../theme/theme";
+import Screen from "../Screen";
 
 export default function InverterCalc() {
   const [dcPower, setDcPower] = useState("");
@@ -36,6 +37,7 @@ export default function InverterCalc() {
   };
 
   return (
+    <Screen>
     <View style={styles.container}>
       <Text style={styles.title}>Inverter Efficiency</Text>
       <Text style={styles.formula}>η = (AC Power / DC Power) × 100</Text>
@@ -71,6 +73,7 @@ export default function InverterCalc() {
         </View>
       )}
     </View>
+    </Screen>
   );
 }
 
